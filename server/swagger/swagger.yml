@@ -1,0 +1,63 @@
+---
+swagger: '2.0'
+host: localhost:5006
+info:
+  version: 0.0.1
+  title: Soundtouch RESTful/json server
+  description: |
+    This applications implements a RESTful/json based API for the soundtouch system.
+    It's implemented as an API which is described by this swagger spec document.
+
+    The server discovers automatically all Soundtouch devices present in the LAN.
+    It's intend is to ease the communication with Boses Soundtouch system.
+
+paths:
+  /{speakerName}/key/{keyId}:
+    get:
+      operationId: pressKey
+      description: Presses and releases a key on selected deviceId 
+      produces:
+        - text/plain
+      parameters:
+        - name: speakerName
+          in: path
+          required: true
+          type: string
+          description: The name of device
+        - name: keyId
+          in: path
+          required: true
+          type: string
+          enum: ["PLAY", "PAUSE", "STOP", "PREV_TRACK","NEXT_TRACK",
+          "POWER", "MUTE","VOLUME_UP","VOLUME_DOWN",
+          "PRESET_1", "PRESET_2", "PRESET_3", "PRESET_4", "PRESET_5", "PRESET_6", "AUX_INPUT",
+          "SHUFFLE_OFF", "SHUFFLE_ON",
+          "REPEAT_OFF","REPEAT_ONE", "REPEAT_ALL",
+          "PLAY_PAUSE", "ADD_FAVORITE", "REMOVE_FAVORITE",
+          "BOOKMARK",
+          "THUMBS_UP","THUMBS_DOWN"]
+      responses:
+        200:
+          description: empty on success
+          schema:
+              type: string
+              description: empty on success
+
+  /{speakerName}/playPause:
+    get:
+      operationId: playPause
+      description: toggles between PLAYING and PAUSE state
+      produces:
+        - text/plain
+      parameters:
+        - name: speakerName
+          in: path
+          required: true
+          type: string
+ 
+      responses:
+        200:
+          description: empty on success
+          schema:
+              type: string
+              description: empty on success
