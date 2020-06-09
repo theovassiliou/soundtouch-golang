@@ -13,6 +13,11 @@ type speakerMap map[string]bool
 var visibleSpeakers = make(speakers)
 var filteredSpeakers speakerMap
 
+// NetworkConfig describes the soundtouch network
+// InterfaceName as the network interface to listen
+// NoOfSystems is the number of expected systems. Searching for at least this amount of systems
+// SpeakerToListenFor contains the defined list of speakers we are handling
+// UpdateHandlers the list of handlers of handlers to be used.
 type NetworkConfig struct {
 	InterfaceName      string
 	NoOfSystems        int
@@ -20,15 +25,21 @@ type NetworkConfig struct {
 	UpdateHandlers     []UpdateHandlerConfig
 }
 
+// GetDevices starts listening on the indicated interface for the speakers to listen for.
+// passes to speakers the series of speakers that are handled for further processing.
+// Closes the speaker channel after all speakers found.
 func GetDevices(conf NetworkConfig) (speakers chan *Speaker) {
 	return getDevices(conf, true)
 }
 
+// SearchDevices searches on the indicated interface for the speakers to listen for.
+// passes to speakers the series of speakers that are handled for further processing.
+// Keeps the speaker channel open for additional speakers.
 func SearchDevices(conf NetworkConfig) (speakers chan *Speaker) {
 	return getDevices(conf, false)
 }
 
-// GetDevices starts listening on the indicated interface for the speakers to listen for.
+// getDevices starts listening on the indicated interface for the speakers to listen for.
 // passes to speakers the series of speakers that are handled for further processing
 func getDevices(conf NetworkConfig, closeChannel bool) (speakers chan *Speaker) {
 	iff, err := net.InterfaceByName(conf.InterfaceName)
