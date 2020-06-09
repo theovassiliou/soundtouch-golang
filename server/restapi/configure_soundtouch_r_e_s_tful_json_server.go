@@ -25,23 +25,25 @@ import (
 	"github.com/theovassiliou/soundtouch-golang/server/restapi/operations/device"
 	"github.com/theovassiliou/soundtouch-golang/server/restapi/operations/key"
 
-	soundtouch "github.com/theovassiliou/soundtouch-golang"
+	sndt "github.com/theovassiliou/soundtouch-golang"
 )
 
 //go:generate swagger generate server --target ../../server --name SoundtouchRESTfulJSONServer --spec ../swagger/swagger.yml
 type speakerMap map[string]bool
 
+// RestSpeaker is the Speaker representation within this server.
 type RestSpeaker struct {
-	*soundtouch.Speaker
+	*sndt.Speaker
 }
 
-func New(s *soundtouch.Speaker) *RestSpeaker {
+// New converts a Speaker to a restSpeaker
+func New(s *sndt.Speaker) *RestSpeaker {
 	return &RestSpeaker{s}
 }
 
-type Speakers map[string]*RestSpeaker
+type speakers map[string]*RestSpeaker
 
-var visibleSpeakers = make(Speakers)
+var visibleSpeakers = make(speakers)
 
 type config struct {
 	Interface           string   `short:"i" long:"interface" description:"network interface to listen"`
@@ -63,8 +65,8 @@ func configureFlags(api *operations.SoundtouchRESTfulJSONServerAPI) {
 }
 
 type speakerDevice struct {
-	Name      string                 `json:"name"`
-	Addresses []soundtouch.IPAddress `json:"addresses"`
+	Name      string           `json:"name"`
+	Addresses []sndt.IPAddress `json:"addresses"`
 }
 
 type speakerDeviceAdvanced map[string]interface{}
@@ -88,19 +90,19 @@ func configureAPI(api *operations.SoundtouchRESTfulJSONServerAPI) http.Handler {
 	api.JSONConsumer = runtime.JSONConsumer()
 	api.JSONProducer = runtime.JSONProducer()
 
-	nConf := soundtouch.NetworkConfig{
+	nConf := sndt.NetworkConfig{
 		InterfaceName: soundtouchFlags.Interface,
 		NoOfSystems:   soundtouchFlags.NoSoundtouchSystems,
-		UpdateHandlers: []soundtouch.UpdateHandlerConfig{
+		UpdateHandlers: []sndt.UpdateHandlerConfig{
 			{
 				Name:          "",
-				UpdateHandler: soundtouch.UpdateHandlerFunc(basicHandler),
+				UpdateHandler: sndt.UpdateHandlerFunc(basicHandler),
 				Terminate:     false,
 			},
 		},
 	}
 
-	speakerCh := soundtouch.GetDevices(nConf)
+	speakerCh := sndt.GetDevices(nConf)
 	for speaker := range speakerCh {
 		s := RestSpeaker{speaker}
 		visibleSpeakers[speaker.Name()] = &s
@@ -108,7 +110,7 @@ func configureAPI(api *operations.SoundtouchRESTfulJSONServerAPI) http.Handler {
 
 	// GET /api/keys-list
 	api.APIKeysListHandler = apiops.KeysListHandlerFunc(func(params apiops.KeysListParams) middleware.Responder {
-		return apiops.NewKeysListOK().WithPayload(soundtouch.ALLKEYS)
+		return apiops.NewKeysListOK().WithPayload(sndt.ALLKEYS)
 	})
 
 	// GET /device/list
@@ -144,7 +146,7 @@ func configureAPI(api *operations.SoundtouchRESTfulJSONServerAPI) http.Handler {
 		s := visibleSpeakers[params.SpeakerName]
 
 		s.PowerOn()
-		s.PressKey(soundtouch.PLAYPAUSE)
+		s.PressKey(sndt.PLAYPAUSE)
 
 		return key.NewPlayPauseNoContent()
 	})
@@ -157,7 +159,7 @@ func configureAPI(api *operations.SoundtouchRESTfulJSONServerAPI) http.Handler {
 
 		s := visibleSpeakers[params.SpeakerName]
 
-		s.PressKey(soundtouch.Key(params.KeyID))
+		s.PressKey(sndt.Key(params.KeyID))
 		return key.NewPressKeyNoContent()
 
 	})
@@ -170,7 +172,7 @@ func configureAPI(api *operations.SoundtouchRESTfulJSONServerAPI) http.Handler {
 
 		s := visibleSpeakers[params.SpeakerName]
 		s.PowerOn()
-		s.PressKey(soundtouch.Key(soundtouch.PLAY))
+		s.PressKey(sndt.Key(sndt.PLAY))
 
 		return key.NewPlayNoContent()
 	})
@@ -230,7 +232,7 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 	return handler
 }
 
-func checkInMap(deviceID string, list Speakers) bool {
+func checkInMap(deviceID string, list speakers) bool {
 	for _, ms := range list {
 		if ms.DeviceInfo.DeviceID == deviceID {
 			return true
@@ -239,21 +241,21 @@ func checkInMap(deviceID string, list Speakers) bool {
 	return false
 }
 
-func basicHandler(msgChan chan *soundtouch.Update, speaker soundtouch.Speaker) {
+func basicHandler(msgChan chan *sndt.Update, speaker sndt.Speaker) {
 	for m := range msgChan {
 		log.Printf("%s\n", m)
 	}
 }
 
-func ContentItem(u soundtouch.Update) soundtouch.ContentItem {
-	if HasContentItem(u) {
-		return u.Value.(soundtouch.NowPlaying).Content
+func contentItem(u sndt.Update) sndt.ContentItem {
+	if hasContentItem(u) {
+		return u.Value.(sndt.NowPlaying).Content
 	}
-	return soundtouch.ContentItem{}
+	return sndt.ContentItem{}
 
 }
 
-func HasContentItem(u soundtouch.Update) bool {
+func hasContentItem(u sndt.Update) bool {
 	switch reflect.TypeOf(u.Value).Name() {
 	case "NowPlaying":
 		return true
