@@ -11,6 +11,7 @@ type Key string
 const (
 	PLAY           = "PLAY"
 	PAUSE          = "PAUSE"
+	PLAYPAUSE      = "PLAY_PAUSE"
 	STOP           = "STOP"
 	PREVTRACK      = "PREV_TRACK"
 	NEXTTRACK      = "NEXT_TRACK"
