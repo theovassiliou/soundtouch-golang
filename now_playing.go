@@ -78,3 +78,53 @@ func (s *Speaker) NowPlaying() (NowPlaying, error) {
 	}
 	return nowPlaying, nil
 }
+
+func (s *Speaker) IsAlive() bool {
+	np, err := s.NowPlaying()
+	if err != nil {
+		return false
+	}
+
+	var isAlive bool
+	isAlive = np.PlayStatus != Standby
+
+	if isAlive {
+		isAlive = np.PlayStatus == PlayState
+	}
+	return isAlive
+}
+
+func (s *Speaker) IsPoweredOn() bool {
+	np, err := s.NowPlaying()
+	if err != nil {
+		return false
+	}
+	return np.Source != Standby
+}
+
+func (s *Speaker) PowerOn() bool {
+	if !s.IsPoweredOn() {
+		s.PressKey(POWER)
+		return true
+	}
+	return false
+}
+
+func (s *Speaker) PowerOnWithVolume(vol int) bool {
+	if !s.IsPoweredOn() {
+		s.PressKey(POWER)
+		s.SetVolume(vol)
+		return true
+	}
+	return false
+
+}
+
+func (s *Speaker) PowerOff() bool {
+	if s.IsPoweredOn() {
+		s.PressKey(POWER)
+		return true
+	}
+	return false
+
+}
