@@ -71,7 +71,7 @@ func NewSpeaker(entry *mdns.ServiceEntry) *Speaker {
 		nil,
 		nil,
 		[]UpdateHandlerConfig{
-			UpdateHandlerConfig{
+			{
 				Name: "NotConfigured",
 				UpdateHandler: UpdateHandlerFunc(func(msgChan chan *Update, speaker Speaker) {
 					log.Infof("UpdateHandler not configured.")
