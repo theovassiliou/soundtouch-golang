@@ -46,7 +46,13 @@ func main() {
 	nConf := soundtouch.NetworkConfig{
 		InterfaceName: conf.Interface,
 		NoOfSystems:   conf.NoSoundtouchSystems,
-		UpdateHandler: soundtouch.UpdateHandlerFunc(basicHandler),
+		UpdateHandlers: []soundtouch.UpdateHandlerConfig{
+			{
+				Name:          "",
+				UpdateHandler: soundtouch.UpdateHandlerFunc(basicHandler),
+				Terminate:     false,
+			},
+		},
 	}
 
 	speakerCh := soundtouch.GetDevices(nConf)

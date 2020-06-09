@@ -47,7 +47,13 @@ func main() {
 		InterfaceName:      conf.Interface,
 		NoOfSystems:        conf.NoSoundtouchSystems,
 		SpeakerToListenFor: conf.Speakers,
-		UpdateHandler:      soundtouch.UpdateHandlerFunc(basicHandler),
+		UpdateHandlers: []soundtouch.UpdateHandlerConfig{
+			{
+				Name:          "",
+				UpdateHandler: soundtouch.UpdateHandlerFunc(basicHandler),
+				Terminate:     false,
+			},
+		},
 	}
 
 	speakerCh := soundtouch.SearchDevices(nConf)

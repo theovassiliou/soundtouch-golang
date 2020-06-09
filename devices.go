@@ -17,7 +17,7 @@ type NetworkConfig struct {
 	InterfaceName      string
 	NoOfSystems        int
 	SpeakerToListenFor []string
-	UpdateHandler      UpdateHandlerFunc
+	UpdateHandlers     []UpdateHandlerConfig
 }
 
 func GetDevices(conf NetworkConfig) (speakers chan *Speaker) {
@@ -72,16 +72,17 @@ func getDevices(conf NetworkConfig, closeChannel bool) (speakers chan *Speaker) 
 				}
 
 				visibleSpeakers[speaker.DeviceID()] = speaker
-				// wg.Add(1)
-				if conf.UpdateHandler != nil {
-					// register handler
-					speaker.UpdateHandler = conf.UpdateHandler
+
+				// register handles
+				for _, uh := range conf.UpdateHandlers {
+					speaker.AddUpdateHandler(uh)
 				}
+
 				go func(s *Speaker, msgChan chan *Update) {
 					// defer wg.Done()
 					webSocketCh, _ := s.Listen()
 					s.webSocketCh = webSocketCh
-					s.UpdateHandler.Handle(webSocketCh, *s)
+					s.Handle(webSocketCh)
 				}(speaker, messageCh)
 
 				speakers <- speaker

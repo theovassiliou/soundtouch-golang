@@ -91,7 +91,13 @@ func configureAPI(api *operations.SoundtouchRESTfulJSONServerAPI) http.Handler {
 	nConf := soundtouch.NetworkConfig{
 		InterfaceName: soundtouchFlags.Interface,
 		NoOfSystems:   soundtouchFlags.NoSoundtouchSystems,
-		UpdateHandler: soundtouch.UpdateHandlerFunc(basicHandler),
+		UpdateHandlers: []soundtouch.UpdateHandlerConfig{
+			{
+				Name:          "",
+				UpdateHandler: soundtouch.UpdateHandlerFunc(basicHandler),
+				Terminate:     false,
+			},
+		},
 	}
 
 	speakerCh := soundtouch.GetDevices(nConf)

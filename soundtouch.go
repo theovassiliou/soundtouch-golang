@@ -19,14 +19,14 @@ const messageBufferSize int = 256
 
 // Speaker defines a soundtouch speaker
 type Speaker struct {
-	IP            net.IP
-	Port          int
-	BaseHTTPURL   url.URL
-	WebSocketURL  url.URL
-	DeviceInfo    Info
-	conn          *websocket.Conn
-	webSocketCh   chan *Update
-	UpdateHandler UpdateHandler
+	IP             net.IP
+	Port           int
+	BaseHTTPURL    url.URL
+	WebSocketURL   url.URL
+	DeviceInfo     Info
+	conn           *websocket.Conn
+	webSocketCh    chan *Update
+	UpdateHandlers []UpdateHandlerConfig
 }
 
 // Lookup listens via mdns for soundtouch speakers and returns Speaker channel
@@ -52,6 +52,10 @@ func Lookup(iface *net.Interface) <-chan *Speaker {
 
 // NewSpeaker returns a new Speaker entity based on a mdns service entry
 func NewSpeaker(entry *mdns.ServiceEntry) *Speaker {
+	if entry == nil {
+		return &Speaker{}
+	}
+
 	return &Speaker{
 		entry.AddrV4,
 		entry.Port,
@@ -66,9 +70,15 @@ func NewSpeaker(entry *mdns.ServiceEntry) *Speaker {
 		Info{},
 		nil,
 		nil,
-		UpdateHandlerFunc(func(msgChan chan *Update, speaker Speaker) {
-			log.Infof("UpdateHandler not configured.")
-		}),
+		[]UpdateHandlerConfig{
+			UpdateHandlerConfig{
+				Name: "NotConfigured",
+				UpdateHandler: UpdateHandlerFunc(func(msgChan chan *Update, speaker Speaker) {
+					log.Infof("UpdateHandler not configured.")
+				}),
+				Terminate: false,
+			},
+		},
 	}
 }
 
@@ -181,17 +191,4 @@ func (s *Speaker) Name() (name string) {
 // DeviceID returns the speakers DeviceID as indicated in the info message, or "" if name unknwon
 func (s *Speaker) DeviceID() (name string) {
 	return s.DeviceInfo.DeviceID
-}
-
-// UpdateHandlerFunc turns a function with the right signature into a update handler
-type UpdateHandlerFunc func(msgChan chan *Update, speaker Speaker)
-
-// Handle executing the request and returning a response
-func (fn UpdateHandlerFunc) Handle(msgChan chan *Update, speaker Speaker) {
-	fn(msgChan, speaker)
-}
-
-// UpdateHandler interface for that can handle valid update params
-type UpdateHandler interface {
-	Handle(msgChan chan *Update, speaker Speaker)
 }
