@@ -354,6 +354,78 @@ func init() {
           }
         }
       }
+    },
+    "/{speakerName}/presets": {
+      "get": {
+        "description": "This method will return all 6 presets that are configured on the SoundTouch device.",
+        "produces": [
+          "application/berlin.vassiliou-pohl.soundtouch-golang.v1+json"
+        ],
+        "tags": [
+          "key",
+          "device"
+        ],
+        "operationId": "presets",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The name of device",
+            "name": "speakerName",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "a JSON A JSON object describing the presets. Returns information both in Standby and PoweredOn mode",
+            "schema": {
+              "$ref": "#/definitions/bObject"
+            }
+          },
+          "default": {
+            "description": "generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/{speakerName}/trackInfo": {
+      "get": {
+        "description": "Get more information on what is currently played",
+        "produces": [
+          "application/berlin.vassiliou-pohl.soundtouch-golang.v1+json"
+        ],
+        "tags": [
+          "key",
+          "device"
+        ],
+        "operationId": "trackInfo",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The name of device",
+            "name": "speakerName",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "a JSON A JSON object indicting what is being played. Returns information both in Standby and PoweredOn mode",
+            "schema": {
+              "$ref": "#/definitions/bObject"
+            }
+          },
+          "default": {
+            "description": "generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -767,6 +839,78 @@ func init() {
             "description": "The returned status will be true if the SoundTouch is turned on. The returned status will be false if the SoundTouch was already turned on.",
             "schema": {
               "$ref": "#/definitions/bStatus"
+            }
+          },
+          "default": {
+            "description": "generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/{speakerName}/presets": {
+      "get": {
+        "description": "This method will return all 6 presets that are configured on the SoundTouch device.",
+        "produces": [
+          "application/berlin.vassiliou-pohl.soundtouch-golang.v1+json"
+        ],
+        "tags": [
+          "key",
+          "device"
+        ],
+        "operationId": "presets",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The name of device",
+            "name": "speakerName",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "a JSON A JSON object describing the presets. Returns information both in Standby and PoweredOn mode",
+            "schema": {
+              "$ref": "#/definitions/bObject"
+            }
+          },
+          "default": {
+            "description": "generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/{speakerName}/trackInfo": {
+      "get": {
+        "description": "Get more information on what is currently played",
+        "produces": [
+          "application/berlin.vassiliou-pohl.soundtouch-golang.v1+json"
+        ],
+        "tags": [
+          "key",
+          "device"
+        ],
+        "operationId": "trackInfo",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The name of device",
+            "name": "speakerName",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "a JSON A JSON object indicting what is being played. Returns information both in Standby and PoweredOn mode",
+            "schema": {
+              "$ref": "#/definitions/bObject"
             }
           },
           "default": {

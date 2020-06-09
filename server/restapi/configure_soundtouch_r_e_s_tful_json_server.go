@@ -121,6 +121,24 @@ func configureAPI(api *operations.SoundtouchRESTfulJSONServerAPI) http.Handler {
 		return key.NewNowPlayingOK().WithPayload(np)
 	})
 
+	// GET /{speakerName}/trackInfo
+	api.KeyTrackInfoHandler = key.TrackInfoHandlerFunc(func(params key.TrackInfoParams) middleware.Responder {
+		return middleware.NotImplemented("/speakerName/trackInfo currently not implemented")
+	})
+
+	// GET /{speakerName}/Presets
+	api.KeyPresetsHandler = key.PresetsHandlerFunc(func(params key.PresetsParams) middleware.Responder {
+		ck, err := checkSpeakerName(params.SpeakerName)
+		if !ck {
+			return key.NewPresetsDefault(404).WithPayload(err)
+		}
+
+		s := visibleSpeakers[params.SpeakerName]
+
+		np, _ := s.Presets()
+		return key.NewPresetsOK().WithPayload(np)
+	})
+
 	// GET /api/keys-list
 	api.APIKeysListHandler = apiops.KeysListHandlerFunc(func(params apiops.KeysListParams) middleware.Responder {
 		return apiops.NewKeysListOK().WithPayload(sndt.ALLKEYS)

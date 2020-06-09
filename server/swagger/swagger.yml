@@ -33,9 +33,9 @@ paths:
           in: path
           required: true
           type: string
-          enum: ["PLAY", "PAUSE", "STOP", "PREV_TRACK","NEXT_TRACK",
-          "POWER", "MUTE","VOLUME_UP","VOLUME_DOWN",
-          "PRESET_1", "PRESET_2", "PRESET_3", "PRESET_4", "PRESET_5", "PRESET_6", "AUX_INPUT",
+          enum: ["PLAY", "PAUSE", "PREV_TRACK","NEXT_TRACK",
+          "POWER", "MUTE",
+          "PRESET_1", "PRESET_2", "PRESET_3", "PRESET_4", "PRESET_5", "PRESET_6",
           "SHUFFLE_OFF", "SHUFFLE_ON",
           "REPEAT_OFF","REPEAT_ONE", "REPEAT_ALL",
           "PLAY_PAUSE", "ADD_FAVORITE", "REMOVE_FAVORITE",
@@ -161,6 +161,56 @@ paths:
       responses:
         200:
           description: a JSON A JSON object indicting what is being played. 
+            Returns information both in Standby and PoweredOn mode 
+          schema:
+            $ref: "#/definitions/bObject" 
+        default:
+          description: generic error response
+          schema:
+            $ref: "#/definitions/error"
+  /{speakerName}/trackInfo:
+    get:
+      tags:
+        - key
+        - device
+      operationId: trackInfo
+      description: Get more information on what is currently played
+      produces:
+        - application/berlin.vassiliou-pohl.soundtouch-golang.v1+json
+      parameters:
+        - name: speakerName
+          in: path
+          required: true
+          type: string
+          description: The name of device
+      responses:
+        200:
+          description: a JSON A JSON object indicting what is being played. 
+            Returns information both in Standby and PoweredOn mode 
+          schema:
+            $ref: "#/definitions/bObject" 
+        default:
+          description: generic error response
+          schema:
+            $ref: "#/definitions/error"
+  /{speakerName}/presets:
+    get:
+      tags:
+        - key
+        - device
+      operationId: presets
+      description: This method will return all 6 presets that are configured on the SoundTouch device.
+      produces:
+        - application/berlin.vassiliou-pohl.soundtouch-golang.v1+json
+      parameters:
+        - name: speakerName
+          in: path
+          required: true
+          type: string
+          description: The name of device
+      responses:
+        200:
+          description: a JSON A JSON object describing the presets.
             Returns information both in Standby and PoweredOn mode 
           schema:
             $ref: "#/definitions/bObject" 

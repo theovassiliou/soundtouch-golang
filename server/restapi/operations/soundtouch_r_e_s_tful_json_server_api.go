@@ -69,8 +69,14 @@ func NewSoundtouchRESTfulJSONServerAPI(spec *loads.Document) *SoundtouchRESTfulJ
 		KeyPowerOnHandler: key.PowerOnHandlerFunc(func(params key.PowerOnParams) middleware.Responder {
 			return middleware.NotImplemented("operation key.PowerOn has not yet been implemented")
 		}),
+		KeyPresetsHandler: key.PresetsHandlerFunc(func(params key.PresetsParams) middleware.Responder {
+			return middleware.NotImplemented("operation key.Presets has not yet been implemented")
+		}),
 		KeyPressKeyHandler: key.PressKeyHandlerFunc(func(params key.PressKeyParams) middleware.Responder {
 			return middleware.NotImplemented("operation key.PressKey has not yet been implemented")
+		}),
+		KeyTrackInfoHandler: key.TrackInfoHandlerFunc(func(params key.TrackInfoParams) middleware.Responder {
+			return middleware.NotImplemented("operation key.TrackInfo has not yet been implemented")
 		}),
 	}
 }
@@ -126,8 +132,12 @@ type SoundtouchRESTfulJSONServerAPI struct {
 	KeyPowerOffHandler key.PowerOffHandler
 	// KeyPowerOnHandler sets the operation handler for the power on operation
 	KeyPowerOnHandler key.PowerOnHandler
+	// KeyPresetsHandler sets the operation handler for the presets operation
+	KeyPresetsHandler key.PresetsHandler
 	// KeyPressKeyHandler sets the operation handler for the press key operation
 	KeyPressKeyHandler key.PressKeyHandler
+	// KeyTrackInfoHandler sets the operation handler for the track info operation
+	KeyTrackInfoHandler key.TrackInfoHandler
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
@@ -218,8 +228,14 @@ func (o *SoundtouchRESTfulJSONServerAPI) Validate() error {
 	if o.KeyPowerOnHandler == nil {
 		unregistered = append(unregistered, "key.PowerOnHandler")
 	}
+	if o.KeyPresetsHandler == nil {
+		unregistered = append(unregistered, "key.PresetsHandler")
+	}
 	if o.KeyPressKeyHandler == nil {
 		unregistered = append(unregistered, "key.PressKeyHandler")
+	}
+	if o.KeyTrackInfoHandler == nil {
+		unregistered = append(unregistered, "key.TrackInfoHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -344,7 +360,15 @@ func (o *SoundtouchRESTfulJSONServerAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
+	o.handlers["GET"]["/{speakerName}/presets"] = key.NewPresets(o.context, o.KeyPresetsHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
 	o.handlers["GET"]["/{speakerName}/key/{keyId}"] = key.NewPressKey(o.context, o.KeyPressKeyHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/{speakerName}/trackInfo"] = key.NewTrackInfo(o.context, o.KeyTrackInfoHandler)
 }
 
 // Serve creates a http handler to serve the API over HTTP
