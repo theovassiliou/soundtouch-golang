@@ -17,6 +17,16 @@ const (
 	Standby           = "STANDBY"
 )
 
+// ALLSTATES contains all soundtouch state constants
+var ALLSTATES = []string{
+	PlayState,
+	PauseState,
+	BufferingState,
+	InvalidPlayStatus,
+	StopState,
+	Standby,
+}
+
 // Source is a string type
 type Source string
 
@@ -40,11 +50,36 @@ const (
 	IHeart             = "IHEART"
 )
 
+// ALLSOURCES contains all soundtouch sources
+var ALLSOURCES = []string{
+	Slave,
+	InternetRadio,
+	LocalInternetRadio,
+	Pandora,
+	TuneIn,
+	Airplay,
+	StoredMusic,
+	Aux,
+	Bluetooth,
+	Product,
+	OffSource,
+	CurratedRadio,
+	UPDATE,
+	Deezer,
+	Spotify,
+	IHeart,
+}
+
 // All StreamTypes
 const (
 	RadioStreaming = "RADIO_STREAMING"
 	TrackOnDemand  = "TRACK_ONDEMAND"
 )
+
+// ALLSTREAMS contains all soundtouch streamtypes
+var ALLSTREAMS = []string{
+	RadioStreaming, TrackOnDemand,
+}
 
 // NowPlaying defines the now_playing message to/from soundtouch system
 type NowPlaying struct {
@@ -79,6 +114,7 @@ func (s *Speaker) NowPlaying() (NowPlaying, error) {
 	return nowPlaying, nil
 }
 
+// IsAlive returns true in case the soundtouch system is in PlayState
 func (s *Speaker) IsAlive() bool {
 	np, err := s.NowPlaying()
 	if err != nil {
@@ -94,6 +130,7 @@ func (s *Speaker) IsAlive() bool {
 	return isAlive
 }
 
+// IsPoweredOn returns true in case the soundtouch system is not in standby but powered
 func (s *Speaker) IsPoweredOn() bool {
 	np, err := s.NowPlaying()
 	if err != nil {
@@ -102,6 +139,7 @@ func (s *Speaker) IsPoweredOn() bool {
 	return np.Source != Standby
 }
 
+// PowerOn switches the soundtouch system on. True on success. Returns false in case the system was already powered
 func (s *Speaker) PowerOn() bool {
 	if !s.IsPoweredOn() {
 		s.PressKey(POWER)
@@ -110,6 +148,7 @@ func (s *Speaker) PowerOn() bool {
 	return false
 }
 
+// PowerOnWithVolume switches the soundtouch system on and set's a specific volume. True on success. Returns false in case the system was already powered with no volume set.
 func (s *Speaker) PowerOnWithVolume(vol int) bool {
 	if !s.IsPoweredOn() {
 		s.PressKey(POWER)
@@ -120,6 +159,7 @@ func (s *Speaker) PowerOnWithVolume(vol int) bool {
 
 }
 
+// PowerOff powers off the soundtouch systems. True on success. Returns false in case it was already powered off.
 func (s *Speaker) PowerOff() bool {
 	if s.IsPoweredOn() {
 		s.PressKey(POWER)
