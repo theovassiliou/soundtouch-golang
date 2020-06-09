@@ -89,6 +89,8 @@ func getDevices(conf NetworkConfig, closeChannel bool) (speakers chan *Speaker) 
 			}
 			if len(visibleSpeakers) < conf.NoOfSystems {
 				time.Sleep(10 * time.Second)
+			} else {
+				ok = false
 			}
 		}
 
