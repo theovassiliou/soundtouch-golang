@@ -38,6 +38,37 @@ const (
 	REMOVEFAVORITE = "REMOVE_FAVORITE"
 )
 
+// ALLKEYS contains all KEY constant that can be sent to soundtouch
+var ALLKEYS = []string{
+	PLAY,
+	PAUSE,
+	PLAYPAUSE,
+	STOP,
+	PREVTRACK,
+	NEXTTRACK,
+	THUMBSUP,
+	THUMBSDOWN,
+	BOOKMARK,
+	POWER,
+	MUTE,
+	VOLUMEUP,
+	VOLUMEDOWN,
+	PRESET1,
+	PRESET2,
+	PRESET3,
+	PRESET4,
+	PRESET5,
+	PRESET6,
+	AUXINPUT,
+	SHUFFLEOFF,
+	SHUFFLEON,
+	REPEATOFF,
+	REPEATONE,
+	REPEATALL,
+	ADDFAVORITE,
+	REMOVEFAVORITE,
+}
+
 // PressKey send key press/release pair to soundtouch system
 func (s *Speaker) PressKey(key Key) error {
 	press := []byte(fmt.Sprintf(`<key state="press" sender="Gabbo">%v</key>`, key))

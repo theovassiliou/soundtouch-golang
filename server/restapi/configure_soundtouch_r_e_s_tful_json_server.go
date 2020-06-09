@@ -54,7 +54,7 @@ var soundtouchFlags = config{}
 
 func configureFlags(api *operations.SoundtouchRESTfulJSONServerAPI) {
 	api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{
-		swag.CommandLineOptionsGroup{
+		{
 			ShortDescription: "Soundtouch Flags",
 			LongDescription:  "",
 			Options:          &soundtouchFlags,
@@ -62,12 +62,12 @@ func configureFlags(api *operations.SoundtouchRESTfulJSONServerAPI) {
 	}
 }
 
-type Device struct {
+type speakerDevice struct {
 	Name      string                 `json:"name"`
 	Addresses []soundtouch.IPAddress `json:"addresses"`
 }
 
-type DeviceAdvanced map[string]interface{}
+type speakerDeviceAdvanced map[string]interface{}
 
 func configureAPI(api *operations.SoundtouchRESTfulJSONServerAPI) http.Handler {
 	// configure the api here
@@ -108,15 +108,7 @@ func configureAPI(api *operations.SoundtouchRESTfulJSONServerAPI) http.Handler {
 
 	// GET /api/keys-list
 	api.APIKeysListHandler = apiops.KeysListHandlerFunc(func(params apiops.KeysListParams) middleware.Responder {
-		keys := models.Keys{"PLAY", "PAUSE", "STOP", "PREV_TRACK", "NEXT_TRACK",
-			"POWER", "MUTE", "VOLUME_UP", "VOLUME_DOWN",
-			"PRESET_1", "PRESET_2", "PRESET_3", "PRESET_4", "PRESET_5", "PRESET_6", "AUX_INPUT",
-			"SHUFFLE_OFF", "SHUFFLE_ON",
-			"REPEAT_OFF", "REPEAT_ONE", "REPEAT_ALL",
-			"PLAY_PAUSE", "ADD_FAVORITE", "REMOVE_FAVORITE",
-			"BOOKMARK",
-			"THUMBS_UP", "THUMBS_DOWN"}
-		return apiops.NewKeysListOK().WithPayload(keys)
+		return apiops.NewKeysListOK().WithPayload(soundtouch.ALLKEYS)
 	})
 
 	// GET /device/list
@@ -132,11 +124,11 @@ func configureAPI(api *operations.SoundtouchRESTfulJSONServerAPI) http.Handler {
 
 	// GET /device/listAdvanced
 	api.DeviceListAdvancedHandler = device.ListAdvancedHandlerFunc(func(params device.ListAdvancedParams) middleware.Responder {
-		var devices []DeviceAdvanced
+		var devices []speakerDeviceAdvanced
 
 		for _, s := range visibleSpeakers {
 			json1, _ := xj.Convert(strings.NewReader(string(s.DeviceInfo.Raw)))
-			var j DeviceAdvanced
+			var j speakerDeviceAdvanced
 			json.Unmarshal(json1.Bytes(), &j)
 			devices = append(devices, j)
 		}
