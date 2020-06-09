@@ -4,18 +4,26 @@ package restapi
 
 import (
 	"crypto/tls"
-	"log"
-	"net"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"reflect"
-	"time"
+	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 
+	xj "github.com/basgys/goxml2json"
+
+	"github.com/theovassiliou/soundtouch-golang/server/models"
 	"github.com/theovassiliou/soundtouch-golang/server/restapi/operations"
+	apiops "github.com/theovassiliou/soundtouch-golang/server/restapi/operations/api"
+	"github.com/theovassiliou/soundtouch-golang/server/restapi/operations/device"
+	"github.com/theovassiliou/soundtouch-golang/server/restapi/operations/key"
 
 	soundtouch "github.com/theovassiliou/soundtouch-golang"
 )
@@ -25,12 +33,10 @@ type speakerMap map[string]bool
 
 type RestSpeaker struct {
 	*soundtouch.Speaker
-	SpeakerName string
-	WebSocketCh chan *soundtouch.Update
 }
 
 func New(s *soundtouch.Speaker) *RestSpeaker {
-	return &RestSpeaker{s, "", nil}
+	return &RestSpeaker{s}
 }
 
 type Speakers map[string]*RestSpeaker
@@ -38,9 +44,10 @@ type Speakers map[string]*RestSpeaker
 var visibleSpeakers = make(Speakers)
 
 type config struct {
-	Speakers            []string `short:"s" long:"speakers" description:"Speakers to listen for, all if not set"`
 	Interface           string   `short:"i" long:"interface" description:"network interface to listen"`
 	NoSoundtouchSystems int      `short:"n" long:"noSystems" description:"Number of Soundtouch systems to scan for."`
+	Speakers            []string `short:"s" long:"speakers" description:"Speakers to listen for, all if not set"`
+	LogLevel            string   `short:"l" long:"log-level" default:"debug" description:"Log level, one of panic, fatal, error, warn or warning, info, debug, trace"`
 }
 
 var soundtouchFlags = config{}
@@ -55,6 +62,13 @@ func configureFlags(api *operations.SoundtouchRESTfulJSONServerAPI) {
 	}
 }
 
+type Device struct {
+	Name      string                 `json:"name"`
+	Addresses []soundtouch.IPAddress `json:"addresses"`
+}
+
+type DeviceAdvanced map[string]interface{}
+
 func configureAPI(api *operations.SoundtouchRESTfulJSONServerAPI) http.Handler {
 	// configure the api here
 	api.ServeError = errors.ServeError
@@ -63,23 +77,129 @@ func configureAPI(api *operations.SoundtouchRESTfulJSONServerAPI) http.Handler {
 	// Expected interface func(string, ...interface{})
 	//
 	// Example:
+	l, err := log.ParseLevel(soundtouchFlags.LogLevel)
+	if err != nil {
+		log.SetLevel(log.DebugLevel)
+		log.Debug("Parse error for log level %s. Using debug instead.", soundtouchFlags.LogLevel)
+	} else {
+		log.SetLevel(l)
+	}
 	api.Logger = log.Printf
 	api.JSONConsumer = runtime.JSONConsumer()
-	api.TxtProducer = runtime.TextProducer()
+	api.JSONProducer = runtime.JSONProducer()
 
-	iff, filteredSpeakers, _ := processConfig(soundtouchFlags)
+	nConf := soundtouch.NetworkConfig{
+		InterfaceName: soundtouchFlags.Interface,
+		NoOfSystems:   soundtouchFlags.NoSoundtouchSystems,
+		UpdateHandler: soundtouch.UpdateHandlerFunc(basicHandler),
+	}
 
-	startScanning(iff, visibleSpeakers, filteredSpeakers)
-	api.PlayPauseHandler = operations.PlayPauseHandlerFunc(func(params operations.PlayPauseParams) middleware.Responder {
+	speakerCh := soundtouch.GetDevices(nConf)
+	for speaker := range speakerCh {
+		s := RestSpeaker{speaker}
+		visibleSpeakers[speaker.Name()] = &s
+	}
 
-		return middleware.NotImplemented("operation operations.PlayPause has not yet been implemented: " + soundtouchFlags.Speakers[0])
+	// GET /api/keys-list
+	api.APIKeysListHandler = apiops.KeysListHandlerFunc(func(params apiops.KeysListParams) middleware.Responder {
+		keys := models.Keys{"PLAY", "PAUSE", "STOP", "PREV_TRACK", "NEXT_TRACK",
+			"POWER", "MUTE", "VOLUME_UP", "VOLUME_DOWN",
+			"PRESET_1", "PRESET_2", "PRESET_3", "PRESET_4", "PRESET_5", "PRESET_6", "AUX_INPUT",
+			"SHUFFLE_OFF", "SHUFFLE_ON",
+			"REPEAT_OFF", "REPEAT_ONE", "REPEAT_ALL",
+			"PLAY_PAUSE", "ADD_FAVORITE", "REMOVE_FAVORITE",
+			"BOOKMARK",
+			"THUMBS_UP", "THUMBS_DOWN"}
+		return apiops.NewKeysListOK().WithPayload(keys)
 	})
 
-	if api.PressKeyHandler == nil {
-		api.PressKeyHandler = operations.PressKeyHandlerFunc(func(params operations.PressKeyParams) middleware.Responder {
-			return middleware.NotImplemented("operation operations.PressKey has not yet been implemented")
-		})
-	}
+	// GET /device/list
+	api.DeviceListHandler = device.ListHandlerFunc(func(params device.ListParams) middleware.Responder {
+		var devices []*models.Device
+
+		for _, s := range visibleSpeakers {
+			devices = append(devices, &models.Device{Addresses: []string([]string{s.DeviceInfo.IPAddress[0]}), Name: s.Name()})
+		}
+
+		return device.NewListOK().WithPayload(devices)
+	})
+
+	// GET /device/listAdvanced
+	api.DeviceListAdvancedHandler = device.ListAdvancedHandlerFunc(func(params device.ListAdvancedParams) middleware.Responder {
+		var devices []DeviceAdvanced
+
+		for _, s := range visibleSpeakers {
+			json1, _ := xj.Convert(strings.NewReader(string(s.DeviceInfo.Raw)))
+			var j DeviceAdvanced
+			json.Unmarshal(json1.Bytes(), &j)
+			devices = append(devices, j)
+		}
+
+		return device.NewListAdvancedOK().WithPayload(devices)
+	})
+
+	api.KeyPlayPauseHandler = key.PlayPauseHandlerFunc(func(params key.PlayPauseParams) middleware.Responder {
+		ck, err := checkSpeakerName(params.SpeakerName)
+		if !ck {
+			return key.NewPlayPauseDefault(404).WithPayload(err)
+		}
+		s := visibleSpeakers[params.SpeakerName]
+
+		s.PowerOn()
+		s.PressKey(soundtouch.PLAYPAUSE)
+
+		return key.NewPlayPauseNoContent()
+	})
+
+	api.KeyPressKeyHandler = key.PressKeyHandlerFunc(func(params key.PressKeyParams) middleware.Responder {
+		ck, err := checkSpeakerName(params.SpeakerName)
+		if !ck {
+			return key.NewPressKeyDefault(404).WithPayload(err)
+		}
+
+		s := visibleSpeakers[params.SpeakerName]
+
+		s.PressKey(soundtouch.Key(params.KeyID))
+		return key.NewPressKeyNoContent()
+
+	})
+
+	api.KeyPlayHandler = key.PlayHandlerFunc(func(params key.PlayParams) middleware.Responder {
+		ck, err := checkSpeakerName(params.SpeakerName)
+		if !ck {
+			return key.NewPressKeyDefault(404).WithPayload(err)
+		}
+
+		s := visibleSpeakers[params.SpeakerName]
+		s.PowerOn()
+		s.PressKey(soundtouch.Key(soundtouch.PLAY))
+
+		return key.NewPlayNoContent()
+	})
+
+	api.KeyPowerOnHandler = key.PowerOnHandlerFunc(func(params key.PowerOnParams) middleware.Responder {
+		ck, err := checkSpeakerName(params.SpeakerName)
+		if !ck {
+			return key.NewPowerOnDefault(404).WithPayload(err)
+		}
+
+		s := visibleSpeakers[params.SpeakerName]
+		result := s.PowerOn()
+
+		return key.NewPowerOnOK().WithPayload(&models.BStatus{Status: &result})
+	})
+
+	api.KeyPowerOffHandler = key.PowerOffHandlerFunc(func(params key.PowerOffParams) middleware.Responder {
+		ck, err := checkSpeakerName(params.SpeakerName)
+		if !ck {
+			return key.NewPowerOnDefault(404).WithPayload(err)
+		}
+
+		s := visibleSpeakers[params.SpeakerName]
+		result := s.PowerOff()
+
+		return key.NewPowerOffOK().WithPayload(&models.BStatus{Status: &result})
+	})
 
 	api.PreServerShutdown = func() {}
 
@@ -112,69 +232,6 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 	return handler
 }
 
-func startScanning(iff *net.Interface, visibleSpeakers Speakers, filteredSpeakers speakerMap) {
-	log.Printf("Scanning for Soundtouch systems.")
-	log.Printf(soundtouchFlags.Interface)
-	for ok := true; ok; ok = (len(visibleSpeakers) < soundtouchFlags.NoSoundtouchSystems) {
-
-		speakerCh := soundtouch.Lookup(iff)
-		messageCh := make(chan *soundtouch.Update)
-
-		for speaker := range speakerCh {
-			speakerInfo, _ := speaker.Info()
-			speaker.DeviceInfo = speakerInfo
-
-			if checkInMap(speaker.DeviceInfo.DeviceID, visibleSpeakers) {
-				log.Printf("Already included. Ignoring.")
-				continue
-			}
-
-			ms := New(speaker)
-
-			// check wether we might have to ignore the speaker
-			if len(filteredSpeakers) > 0 && !(filteredSpeakers)[speakerInfo.Name] {
-				// spkLogger.Traceln("Seen but ignoring messages from: ", speakerInfo.Name)
-				continue
-			}
-
-			visibleSpeakers[speaker.DeviceInfo.DeviceID] = ms
-			log.Printf("Listening\n")
-			log.Printf(" with IP: %v", speaker.IP)
-
-			go func(s *soundtouch.Speaker, msgChan chan *soundtouch.Update) {
-				webSocketCh, _ := s.Listen()
-				magicSpeaker := New(s)
-				magicSpeaker.WebSocketCh = webSocketCh
-				magicSpeaker.SpeakerName = visibleSpeakers[ms.DeviceInfo.DeviceID].DeviceInfo.Name
-				magicSpeaker.MessageLoop()
-			}(speaker, messageCh)
-
-		}
-		time.Sleep(10 * time.Second)
-	}
-	log.Printf("Found all Soundtouch systems. Normal Operation.")
-}
-
-// Will create the interface, the speakerMap, and the scribble database
-func processConfig(conf config) (*net.Interface, speakerMap, error) {
-	filteredSpeakers := make(speakerMap)
-	i, err := net.InterfaceByName(conf.Interface)
-
-	if err != nil {
-		log.Fatalf("Error with interface. %s", err)
-	}
-
-	log.Printf("Listening @ %v, supports: %v, HW Address: %v\n", i.Name, i.Flags.String(), i.HardwareAddr)
-
-	for _, value := range conf.Speakers {
-		filteredSpeakers[value] = true
-		log.Printf("Reacting only speakers %v\n", value)
-
-	}
-
-	return i, filteredSpeakers, nil
-}
-
 func checkInMap(deviceID string, list Speakers) bool {
 	for _, ms := range list {
 		if ms.DeviceInfo.DeviceID == deviceID {
@@ -184,27 +241,10 @@ func checkInMap(deviceID string, list Speakers) bool {
 	return false
 }
 
-func (m *RestSpeaker) MessageLoop() {
-	for message := range m.WebSocketCh {
-		log.Printf("HAAALLLOO")
-		m.HandleUpdate(*message, m.WebSocketCh)
+func basicHandler(msgChan chan *soundtouch.Update, speaker soundtouch.Speaker) {
+	for m := range msgChan {
+		log.Printf("%s\n", m)
 	}
-}
-
-// handle message per speaker
-func (m *RestSpeaker) HandleUpdate(msg soundtouch.Update, webSocketCh chan *soundtouch.Update) {
-	typeName := reflect.TypeOf(msg.Value).Name()
-
-	if !(msg.Is("NowPlaying") || msg.Is("Volume")) {
-		if !msg.Is("ConnectionStateUpdated") {
-			log.Printf("Ignoring %s\n", typeName)
-		}
-		return
-	}
-
-	if !HasContentItem(msg) {
-	}
-
 }
 
 func ContentItem(u soundtouch.Update) soundtouch.ContentItem {
@@ -221,4 +261,17 @@ func HasContentItem(u soundtouch.Update) bool {
 		return true
 	}
 	return false
+}
+
+func checkSpeakerName(speakerName string) (contained bool, err *models.Error) {
+	if visibleSpeakers[speakerName] != nil {
+		return true, nil
+	}
+	var errorMsg = fmt.Sprintf("Speaker %s not found", speakerName)
+
+	err = &models.Error{
+		Code:    20,
+		Message: &errorMsg,
+	}
+	return false, err
 }

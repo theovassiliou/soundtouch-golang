@@ -3,6 +3,7 @@ module github.com/theovassiliou/soundtouch-golang
 go 1.13
 
 require (
+	github.com/basgys/goxml2json v1.1.0
 	github.com/go-openapi/errors v0.19.4
 	github.com/go-openapi/loads v0.19.5
 	github.com/go-openapi/runtime v0.19.15

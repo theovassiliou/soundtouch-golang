@@ -15,10 +15,10 @@
 //  Version: 0.0.1
 //
 //  Consumes:
-//    - application/json
+//    - application/berlin.vassiliou-pohl.soundtouch-golang.v1+json
 //
 //  Produces:
-//    - text/plain
+//    - application/berlin.vassiliou-pohl.soundtouch-golang.v1+json
 //
 // swagger:meta
 package restapi

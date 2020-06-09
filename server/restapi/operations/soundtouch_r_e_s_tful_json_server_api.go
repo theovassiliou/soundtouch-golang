@@ -18,6 +18,10 @@ import (
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+
+	apiops "github.com/theovassiliou/soundtouch-golang/server/restapi/operations/api"
+	"github.com/theovassiliou/soundtouch-golang/server/restapi/operations/device"
+	"github.com/theovassiliou/soundtouch-golang/server/restapi/operations/key"
 )
 
 // NewSoundtouchRESTfulJSONServerAPI creates a new SoundtouchRESTfulJSONServer instance
@@ -39,13 +43,31 @@ func NewSoundtouchRESTfulJSONServerAPI(spec *loads.Document) *SoundtouchRESTfulJ
 
 		JSONConsumer: runtime.JSONConsumer(),
 
-		TxtProducer: runtime.TextProducer(),
+		JSONProducer: runtime.JSONProducer(),
 
-		PlayPauseHandler: PlayPauseHandlerFunc(func(params PlayPauseParams) middleware.Responder {
-			return middleware.NotImplemented("operation PlayPause has not yet been implemented")
+		APIKeysListHandler: apiops.KeysListHandlerFunc(func(params apiops.KeysListParams) middleware.Responder {
+			return middleware.NotImplemented("operation api.KeysList has not yet been implemented")
 		}),
-		PressKeyHandler: PressKeyHandlerFunc(func(params PressKeyParams) middleware.Responder {
-			return middleware.NotImplemented("operation PressKey has not yet been implemented")
+		DeviceListHandler: device.ListHandlerFunc(func(params device.ListParams) middleware.Responder {
+			return middleware.NotImplemented("operation device.List has not yet been implemented")
+		}),
+		DeviceListAdvancedHandler: device.ListAdvancedHandlerFunc(func(params device.ListAdvancedParams) middleware.Responder {
+			return middleware.NotImplemented("operation device.ListAdvanced has not yet been implemented")
+		}),
+		KeyPlayHandler: key.PlayHandlerFunc(func(params key.PlayParams) middleware.Responder {
+			return middleware.NotImplemented("operation key.Play has not yet been implemented")
+		}),
+		KeyPlayPauseHandler: key.PlayPauseHandlerFunc(func(params key.PlayPauseParams) middleware.Responder {
+			return middleware.NotImplemented("operation key.PlayPause has not yet been implemented")
+		}),
+		KeyPowerOffHandler: key.PowerOffHandlerFunc(func(params key.PowerOffParams) middleware.Responder {
+			return middleware.NotImplemented("operation key.PowerOff has not yet been implemented")
+		}),
+		KeyPowerOnHandler: key.PowerOnHandlerFunc(func(params key.PowerOnParams) middleware.Responder {
+			return middleware.NotImplemented("operation key.PowerOn has not yet been implemented")
+		}),
+		KeyPressKeyHandler: key.PressKeyHandlerFunc(func(params key.PressKeyParams) middleware.Responder {
+			return middleware.NotImplemented("operation key.PressKey has not yet been implemented")
 		}),
 	}
 }
@@ -78,17 +100,29 @@ type SoundtouchRESTfulJSONServerAPI struct {
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
 
 	// JSONConsumer registers a consumer for the following mime types:
-	//   - application/json
+	//   - application/berlin.vassiliou-pohl.soundtouch-golang.v1+json
 	JSONConsumer runtime.Consumer
 
-	// TxtProducer registers a producer for the following mime types:
-	//   - text/plain
-	TxtProducer runtime.Producer
+	// JSONProducer registers a producer for the following mime types:
+	//   - application/berlin.vassiliou-pohl.soundtouch-golang.v1+json
+	JSONProducer runtime.Producer
 
-	// PlayPauseHandler sets the operation handler for the play pause operation
-	PlayPauseHandler PlayPauseHandler
-	// PressKeyHandler sets the operation handler for the press key operation
-	PressKeyHandler PressKeyHandler
+	// APIKeysListHandler sets the operation handler for the keys list operation
+	APIKeysListHandler apiops.KeysListHandler
+	// DeviceListHandler sets the operation handler for the list operation
+	DeviceListHandler device.ListHandler
+	// DeviceListAdvancedHandler sets the operation handler for the list advanced operation
+	DeviceListAdvancedHandler device.ListAdvancedHandler
+	// KeyPlayHandler sets the operation handler for the play operation
+	KeyPlayHandler key.PlayHandler
+	// KeyPlayPauseHandler sets the operation handler for the play pause operation
+	KeyPlayPauseHandler key.PlayPauseHandler
+	// KeyPowerOffHandler sets the operation handler for the power off operation
+	KeyPowerOffHandler key.PowerOffHandler
+	// KeyPowerOnHandler sets the operation handler for the power on operation
+	KeyPowerOnHandler key.PowerOnHandler
+	// KeyPressKeyHandler sets the operation handler for the press key operation
+	KeyPressKeyHandler key.PressKeyHandler
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
@@ -151,15 +185,33 @@ func (o *SoundtouchRESTfulJSONServerAPI) Validate() error {
 		unregistered = append(unregistered, "JSONConsumer")
 	}
 
-	if o.TxtProducer == nil {
-		unregistered = append(unregistered, "TxtProducer")
+	if o.JSONProducer == nil {
+		unregistered = append(unregistered, "JSONProducer")
 	}
 
-	if o.PlayPauseHandler == nil {
-		unregistered = append(unregistered, "PlayPauseHandler")
+	if o.APIKeysListHandler == nil {
+		unregistered = append(unregistered, "api.KeysListHandler")
 	}
-	if o.PressKeyHandler == nil {
-		unregistered = append(unregistered, "PressKeyHandler")
+	if o.DeviceListHandler == nil {
+		unregistered = append(unregistered, "device.ListHandler")
+	}
+	if o.DeviceListAdvancedHandler == nil {
+		unregistered = append(unregistered, "device.ListAdvancedHandler")
+	}
+	if o.KeyPlayHandler == nil {
+		unregistered = append(unregistered, "key.PlayHandler")
+	}
+	if o.KeyPlayPauseHandler == nil {
+		unregistered = append(unregistered, "key.PlayPauseHandler")
+	}
+	if o.KeyPowerOffHandler == nil {
+		unregistered = append(unregistered, "key.PowerOffHandler")
+	}
+	if o.KeyPowerOnHandler == nil {
+		unregistered = append(unregistered, "key.PowerOnHandler")
+	}
+	if o.KeyPressKeyHandler == nil {
+		unregistered = append(unregistered, "key.PressKeyHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -190,8 +242,8 @@ func (o *SoundtouchRESTfulJSONServerAPI) ConsumersFor(mediaTypes []string) map[s
 	result := make(map[string]runtime.Consumer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-		case "application/json":
-			result["application/json"] = o.JSONConsumer
+		case "application/berlin.vassiliou-pohl.soundtouch-golang.v1+json":
+			result["application/berlin.vassiliou-pohl.soundtouch-golang.v1+json"] = o.JSONConsumer
 		}
 
 		if c, ok := o.customConsumers[mt]; ok {
@@ -207,8 +259,8 @@ func (o *SoundtouchRESTfulJSONServerAPI) ProducersFor(mediaTypes []string) map[s
 	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-		case "text/plain":
-			result["text/plain"] = o.TxtProducer
+		case "application/berlin.vassiliou-pohl.soundtouch-golang.v1+json":
+			result["application/berlin.vassiliou-pohl.soundtouch-golang.v1+json"] = o.JSONProducer
 		}
 
 		if p, ok := o.customProducers[mt]; ok {
@@ -252,11 +304,35 @@ func (o *SoundtouchRESTfulJSONServerAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/{speakerName}/playPause"] = NewPlayPause(o.context, o.PlayPauseHandler)
+	o.handlers["GET"]["/api/keys-list"] = apiops.NewKeysList(o.context, o.APIKeysListHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/{speakerName}/key/{keyId}"] = NewPressKey(o.context, o.PressKeyHandler)
+	o.handlers["GET"]["/device/list"] = device.NewList(o.context, o.DeviceListHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/device/listAdvanced"] = device.NewListAdvanced(o.context, o.DeviceListAdvancedHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/{speakerName}/play"] = key.NewPlay(o.context, o.KeyPlayHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/{speakerName}/playPause"] = key.NewPlayPause(o.context, o.KeyPlayPauseHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/{speakerName}/powerOff"] = key.NewPowerOff(o.context, o.KeyPowerOffHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/{speakerName}/powerOn"] = key.NewPowerOn(o.context, o.KeyPowerOnHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/{speakerName}/key/{keyId}"] = key.NewPressKey(o.context, o.KeyPressKeyHandler)
 }
 
 // Serve creates a http handler to serve the API over HTTP
