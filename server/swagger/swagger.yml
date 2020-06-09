@@ -143,6 +143,31 @@ paths:
           description: generic error response
           schema:
             $ref: "#/definitions/error"
+  /{speakerName}/nowPlaying:
+    get:
+      tags:
+        - key
+        - device
+      operationId: nowPlaying
+      description: This method will indicate what's playing at this moment. 
+      produces:
+        - application/berlin.vassiliou-pohl.soundtouch-golang.v1+json
+      parameters:
+        - name: speakerName
+          in: path
+          required: true
+          type: string
+          description: The name of device
+      responses:
+        200:
+          description: a JSON A JSON object indicting what is being played. 
+            Returns information both in Standby and PoweredOn mode 
+          schema:
+            $ref: "#/definitions/bObject" 
+        default:
+          description: generic error response
+          schema:
+            $ref: "#/definitions/error"
   /device/list:
     get:
       tags:

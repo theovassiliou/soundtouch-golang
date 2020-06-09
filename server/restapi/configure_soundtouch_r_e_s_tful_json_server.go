@@ -108,6 +108,19 @@ func configureAPI(api *operations.SoundtouchRESTfulJSONServerAPI) http.Handler {
 		visibleSpeakers[speaker.Name()] = &s
 	}
 
+	// GET /{speakerName}/nowPlaying
+	api.KeyNowPlayingHandler = key.NowPlayingHandlerFunc(func(params key.NowPlayingParams) middleware.Responder {
+		ck, err := checkSpeakerName(params.SpeakerName)
+		if !ck {
+			return key.NewNowPlayingDefault(404).WithPayload(err)
+		}
+
+		s := visibleSpeakers[params.SpeakerName]
+
+		np, _ := s.NowPlaying()
+		return key.NewNowPlayingOK().WithPayload(np)
+	})
+
 	// GET /api/keys-list
 	api.APIKeysListHandler = apiops.KeysListHandlerFunc(func(params apiops.KeysListParams) middleware.Responder {
 		return apiops.NewKeysListOK().WithPayload(sndt.ALLKEYS)

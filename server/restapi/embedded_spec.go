@@ -184,6 +184,42 @@ func init() {
         }
       }
     },
+    "/{speakerName}/nowPlaying": {
+      "get": {
+        "description": "This method will indicate what's playing at this moment.",
+        "produces": [
+          "application/berlin.vassiliou-pohl.soundtouch-golang.v1+json"
+        ],
+        "tags": [
+          "key",
+          "device"
+        ],
+        "operationId": "nowPlaying",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The name of device",
+            "name": "speakerName",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "a JSON A JSON object indicting what is being played. Returns information both in Standby and PoweredOn mode",
+            "schema": {
+              "$ref": "#/definitions/bObject"
+            }
+          },
+          "default": {
+            "description": "generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/{speakerName}/play": {
       "get": {
         "description": "starts playing",
@@ -560,6 +596,42 @@ func init() {
             "schema": {
               "description": "empty on success",
               "type": "string"
+            }
+          },
+          "default": {
+            "description": "generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/{speakerName}/nowPlaying": {
+      "get": {
+        "description": "This method will indicate what's playing at this moment.",
+        "produces": [
+          "application/berlin.vassiliou-pohl.soundtouch-golang.v1+json"
+        ],
+        "tags": [
+          "key",
+          "device"
+        ],
+        "operationId": "nowPlaying",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The name of device",
+            "name": "speakerName",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "a JSON A JSON object indicting what is being played. Returns information both in Standby and PoweredOn mode",
+            "schema": {
+              "$ref": "#/definitions/bObject"
             }
           },
           "default": {

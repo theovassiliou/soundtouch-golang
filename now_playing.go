@@ -94,7 +94,7 @@ type NowPlaying struct {
 	TrackID       string      `xml:"trackID"`
 	Art           string      `xml:"art"`
 	StreamType    string      `xml:"streamType"`
-	Raw           []byte
+	Raw           []byte      `json:"-"`
 }
 
 // NowPlaying sends the now_playing command to the soundtouch system

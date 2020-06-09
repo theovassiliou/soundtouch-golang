@@ -54,6 +54,9 @@ func NewSoundtouchRESTfulJSONServerAPI(spec *loads.Document) *SoundtouchRESTfulJ
 		DeviceListAdvancedHandler: device.ListAdvancedHandlerFunc(func(params device.ListAdvancedParams) middleware.Responder {
 			return middleware.NotImplemented("operation device.ListAdvanced has not yet been implemented")
 		}),
+		KeyNowPlayingHandler: key.NowPlayingHandlerFunc(func(params key.NowPlayingParams) middleware.Responder {
+			return middleware.NotImplemented("operation key.NowPlaying has not yet been implemented")
+		}),
 		KeyPlayHandler: key.PlayHandlerFunc(func(params key.PlayParams) middleware.Responder {
 			return middleware.NotImplemented("operation key.Play has not yet been implemented")
 		}),
@@ -113,6 +116,8 @@ type SoundtouchRESTfulJSONServerAPI struct {
 	DeviceListHandler device.ListHandler
 	// DeviceListAdvancedHandler sets the operation handler for the list advanced operation
 	DeviceListAdvancedHandler device.ListAdvancedHandler
+	// KeyNowPlayingHandler sets the operation handler for the now playing operation
+	KeyNowPlayingHandler key.NowPlayingHandler
 	// KeyPlayHandler sets the operation handler for the play operation
 	KeyPlayHandler key.PlayHandler
 	// KeyPlayPauseHandler sets the operation handler for the play pause operation
@@ -197,6 +202,9 @@ func (o *SoundtouchRESTfulJSONServerAPI) Validate() error {
 	}
 	if o.DeviceListAdvancedHandler == nil {
 		unregistered = append(unregistered, "device.ListAdvancedHandler")
+	}
+	if o.KeyNowPlayingHandler == nil {
+		unregistered = append(unregistered, "key.NowPlayingHandler")
 	}
 	if o.KeyPlayHandler == nil {
 		unregistered = append(unregistered, "key.PlayHandler")
@@ -313,6 +321,10 @@ func (o *SoundtouchRESTfulJSONServerAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/device/listAdvanced"] = device.NewListAdvanced(o.context, o.DeviceListAdvancedHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/{speakerName}/nowPlaying"] = key.NewNowPlaying(o.context, o.KeyNowPlayingHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
