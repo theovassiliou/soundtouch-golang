@@ -21,11 +21,6 @@ const PressKeyNoContentCode int = 204
 swagger:response pressKeyNoContent
 */
 type PressKeyNoContent struct {
-
-	/*empty on success
-	  In: Body
-	*/
-	Payload string `json:"body,omitempty"`
 }
 
 // NewPressKeyNoContent creates PressKeyNoContent with default headers values
@@ -34,25 +29,12 @@ func NewPressKeyNoContent() *PressKeyNoContent {
 	return &PressKeyNoContent{}
 }
 
-// WithPayload adds the payload to the press key no content response
-func (o *PressKeyNoContent) WithPayload(payload string) *PressKeyNoContent {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the press key no content response
-func (o *PressKeyNoContent) SetPayload(payload string) {
-	o.Payload = payload
-}
-
 // WriteResponse to the client
 func (o *PressKeyNoContent) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
+	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+
 	rw.WriteHeader(204)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
-	}
 }
 
 /*PressKeyDefault generic error response

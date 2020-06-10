@@ -69,7 +69,7 @@ var ALLKEYS = []string{
 	REMOVEFAVORITE,
 }
 
-// PressKey send key press/release pair to soundtouch system
+// PressKey sends key press command to soundtouch system. For POWER also release is send immediatly afterwards.
 func (s *Speaker) PressKey(key Key) error {
 	press := []byte(fmt.Sprintf(`<key state="press" sender="Gabbo">%v</key>`, key))
 	_, err := s.SetData("key", press)

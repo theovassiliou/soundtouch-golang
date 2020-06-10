@@ -91,15 +91,15 @@ func configureAPI(api *operations.SoundtouchRESTfulJSONServerAPI) http.Handler {
 	api.JSONProducer = runtime.JSONProducer()
 
 	nConf := sndt.NetworkConfig{
-		InterfaceName: soundtouchFlags.Interface,
-		NoOfSystems:   soundtouchFlags.NoSoundtouchSystems,
+		InterfaceName:  soundtouchFlags.Interface,
+		NoOfSystems:    soundtouchFlags.NoSoundtouchSystems,
 		UpdateHandlers: []sndt.UpdateHandlerConfig{
-			{
-				Name:          "",
-				UpdateHandler: sndt.UpdateHandlerFunc(basicHandler),
-				Terminate:     false,
-			},
-		},
+			/* 			{
+			   				Name:          "",
+			   				UpdateHandler: sndt.UpdateHandlerFunc(basicHandler),
+			   				Terminate:     false,
+			   			},
+			*/},
 	}
 
 	speakerCh := sndt.GetDevices(nConf)
@@ -169,6 +169,7 @@ func configureAPI(api *operations.SoundtouchRESTfulJSONServerAPI) http.Handler {
 		return device.NewListAdvancedOK().WithPayload(devices)
 	})
 
+	// GET /{speakerName}/playPause
 	api.KeyPlayPauseHandler = key.PlayPauseHandlerFunc(func(params key.PlayPauseParams) middleware.Responder {
 		ck, err := checkSpeakerName(params.SpeakerName)
 		if !ck {

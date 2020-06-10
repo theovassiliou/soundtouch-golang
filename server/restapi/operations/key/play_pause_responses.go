@@ -21,11 +21,6 @@ const PlayPauseNoContentCode int = 204
 swagger:response playPauseNoContent
 */
 type PlayPauseNoContent struct {
-
-	/*empty on success
-	  In: Body
-	*/
-	Payload string `json:"body,omitempty"`
 }
 
 // NewPlayPauseNoContent creates PlayPauseNoContent with default headers values
@@ -34,25 +29,12 @@ func NewPlayPauseNoContent() *PlayPauseNoContent {
 	return &PlayPauseNoContent{}
 }
 
-// WithPayload adds the payload to the play pause no content response
-func (o *PlayPauseNoContent) WithPayload(payload string) *PlayPauseNoContent {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the play pause no content response
-func (o *PlayPauseNoContent) SetPayload(payload string) {
-	o.Payload = payload
-}
-
 // WriteResponse to the client
 func (o *PlayPauseNoContent) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
+	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+
 	rw.WriteHeader(204)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
-	}
 }
 
 /*PlayPauseDefault generic error response

@@ -44,9 +44,6 @@ paths:
       responses:
         204:
           description: empty on success
-          schema:
-              type: string
-              description: empty on success
         default:
           description: generic error response
           schema:
@@ -68,9 +65,6 @@ paths:
       responses:
         204:
           description: empty on success
-          schema:
-              type: string
-              description: empty on success
         default:
           description: generic error response
           schema:
@@ -92,9 +86,6 @@ paths:
       responses:
         204:
           description: empty on success
-          schema:
-              type: string
-              description: empty on success
         default:
           description: generic error response
           schema:
