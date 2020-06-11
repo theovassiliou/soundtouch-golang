@@ -91,15 +91,21 @@ func configureAPI(api *operations.SoundtouchRESTfulJSONServerAPI) http.Handler {
 	api.JSONProducer = runtime.JSONProducer()
 
 	nConf := sndt.NetworkConfig{
-		InterfaceName:  soundtouchFlags.Interface,
-		NoOfSystems:    soundtouchFlags.NoSoundtouchSystems,
+		InterfaceName: soundtouchFlags.Interface,
+		NoOfSystems:   soundtouchFlags.NoSoundtouchSystems,
 		UpdateHandlers: []sndt.UpdateHandlerConfig{
-			/* 			{
-			   				Name:          "",
-			   				UpdateHandler: sndt.UpdateHandlerFunc(basicHandler),
-			   				Terminate:     false,
-			   			},
-			*/},
+			{
+				Name:          "BASIC-HANDLER",
+				UpdateHandler: sndt.UpdateHandlerFunc(basicHandler),
+				Terminate:     false,
+			},
+			{
+				Name:          "CONNECTION-HANDLER",
+				Speakers:      []string{"Office"},
+				UpdateHandler: sndt.UpdateHandlerFunc(connectionHandler),
+				Terminate:     false,
+			},
+		},
 	}
 
 	speakerCh := sndt.GetDevices(nConf)
@@ -273,9 +279,19 @@ func checkInMap(deviceID string, list speakers) bool {
 	return false
 }
 
-func basicHandler(msgChan chan *sndt.Update, speaker sndt.Speaker) {
-	for m := range msgChan {
-		log.Printf("%s\n", m)
+func basicHandler(hndlName string, update sndt.Update, speaker sndt.Speaker) {
+	typeName := reflect.TypeOf(update.Value).Name()
+	switch typeName {
+	case "ConnectionStateUpdated":
+		return
+	}
+	log.Infof("%s/%s: %s\n", speaker.Name(), typeName, update)
+}
+
+func connectionHandler(hndlName string, update sndt.Update, speaker sndt.Speaker) {
+	typeName := reflect.TypeOf(update.Value).Name()
+	if typeName == "ConnectionStateUpdated" {
+		log.Debugf("%s/%s: %s\n", speaker.Name(), typeName, update)
 	}
 }
 

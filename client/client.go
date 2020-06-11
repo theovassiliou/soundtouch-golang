@@ -81,15 +81,14 @@ func main() {
 
 }
 
-func basicHandler(msgChan chan *soundtouch.Update, speaker soundtouch.Speaker) {
-	for m := range msgChan {
+func basicHandler(hndlName string, update soundtouch.Update, speaker soundtouch.Speaker) {
 
-		mLogger := log.WithFields(log.Fields{
-			"Speaker":       speaker.Name(),
-			"UpdateMsgType": reflect.TypeOf(m.Value).Name(),
-		})
-		mLogger.Infof("%v\n", m)
-	}
+	mLogger := log.WithFields(log.Fields{
+		"Speaker":       speaker.Name(),
+		"UpdateMsgType": reflect.TypeOf(update.Value).Name(),
+	})
+	mLogger.Infof("%v\n", update)
+
 }
 
 func isIn(name string, selected []string) bool {

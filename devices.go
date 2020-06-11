@@ -50,14 +50,14 @@ func getDevices(conf NetworkConfig, closeChannel bool) (speakers chan *Speaker) 
 		{
 			ifaces, err := net.Interfaces()
 			if err != nil {
-				log.Print(fmt.Errorf("localAddresses: %v\n", err.Error()))
+				log.Print(fmt.Errorf("local-addresses: %v", err.Error()))
 				return
 			}
 			log.Println("Available interfaces:")
 			for _, i := range ifaces {
 				addrs, err := i.Addrs()
 				if err != nil {
-					log.Print(fmt.Errorf("localAddresses: %v\n", err.Error()))
+					log.Print(fmt.Errorf("local-addresses: %v", err.Error()))
 					continue
 				}
 				for _, a := range addrs {
@@ -106,7 +106,9 @@ func getDevices(conf NetworkConfig, closeChannel bool) (speakers chan *Speaker) 
 
 				// register handles
 				for _, uh := range conf.UpdateHandlers {
-					speaker.AddUpdateHandler(uh)
+					if (len(uh.Speakers) == 0) || (isIn(uh.Speakers, speaker.Name())) {
+						speaker.AddUpdateHandler(uh)
+					}
 				}
 
 				go func(s *Speaker, msgChan chan *Update) {
@@ -133,6 +135,15 @@ func getDevices(conf NetworkConfig, closeChannel bool) (speakers chan *Speaker) 
 	}()
 	// wg.Wait()
 	return
+}
+
+func isIn(list []string, deviceID string) bool {
+	for _, ms := range list {
+		if ms == deviceID {
+			return true
+		}
+	}
+	return false
 }
 
 func contains(list speakers, deviceID string) bool {

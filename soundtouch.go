@@ -73,7 +73,7 @@ func NewSpeaker(entry *mdns.ServiceEntry) *Speaker {
 		[]UpdateHandlerConfig{
 			{
 				Name: "NotConfigured",
-				UpdateHandler: UpdateHandlerFunc(func(msgChan chan *Update, speaker Speaker) {
+				UpdateHandler: UpdateHandlerFunc(func(hndlName string, update Update, speaker Speaker) {
 					log.Infof("UpdateHandler not configured.")
 				}),
 				Terminate: false,
@@ -114,10 +114,10 @@ func (s *Speaker) Listen() (chan *Update, error) {
 
 			update, err := NewUpdate(body)
 			if err != nil {
-				mLogger.Debugf("Message: unkown")
+				mLogger.Tracef("Message: unkown")
 				mLogger.Tracef(err.Error())
 			} else {
-				mLogger.Debugf("Message: %v", update)
+				mLogger.Tracef("Message: %v", update)
 			}
 			if update != nil {
 				messageCh <- update

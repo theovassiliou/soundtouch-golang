@@ -1,10 +1,13 @@
 package soundtouch
 
+import (
+	log "github.com/sirupsen/logrus"
+)
+
 func (s *Speaker) AddUpdateHandler(uhc UpdateHandlerConfig) {
 	s.RemoveUpdateHandler("NotConfigured")
-	if uhc.Name == "" || s.Name() == uhc.Name {
-		s.UpdateHandlers = append(s.UpdateHandlers, uhc)
-	}
+	log.Debugf("Adding handler: %v to %v", uhc.Name, s.Name())
+	s.UpdateHandlers = append(s.UpdateHandlers, uhc)
 }
 
 func (s *Speaker) RemoveUpdateHandler(name string) {
@@ -29,33 +32,37 @@ func (s *Speaker) HasUpdateHandler(name string) bool {
 }
 
 func (s *Speaker) Handle(msgChan chan *Update) {
-	for _, uh := range s.UpdateHandlers {
-		uh.UpdateHandler.Handle(msgChan, *s)
-		if uh.Terminate {
-			return
+	for update := range msgChan {
+		for _, uh := range s.UpdateHandlers {
+			uh.UpdateHandler.Handle(uh.Name, *update, *s)
+			if uh.Terminate {
+				return
+			}
 		}
 	}
 }
 
 // UpdateHandlerFunc turns a function with the right signature into a update handler
-type UpdateHandlerFunc func(msgChan chan *Update, speaker Speaker)
+type UpdateHandlerFunc func(hndlName string, update Update, speaker Speaker)
 
 // Handle executing the request and returning a response
-func (fn UpdateHandlerFunc) Handle(msgChan chan *Update, speaker Speaker) {
-	fn(msgChan, speaker)
+func (fn UpdateHandlerFunc) Handle(hndlName string, update Update, speaker Speaker) {
+	fn(hndlName, update, speaker)
 }
 
 // UpdateHandler interface for that can handle valid update params
 type UpdateHandler interface {
-	Handle(msgChan chan *Update, speaker Speaker)
+	Handle(hndlName string, update Update, speaker Speaker)
 }
 
 // UpdateHandlerConfig describes an UpdateHandler. It has a
 // Name to be able to remove again
+// Speakers list of SpeakerNames the handler is added. All if empty
 // UpdateHandler the function
 // Terminate indicates whether this is the last handler to be called
 type UpdateHandlerConfig struct {
 	Name          string
+	Speakers      []string
 	UpdateHandler UpdateHandler
 	Terminate     bool
 }

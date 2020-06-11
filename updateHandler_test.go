@@ -36,7 +36,7 @@ func TestSpeaker_RemoveUpdateHandler(t *testing.T) {
 				UpdateHandlers: []UpdateHandlerConfig{
 					UpdateHandlerConfig{
 						Name: "NotConfigured",
-						UpdateHandler: UpdateHandlerFunc(func(msgChan chan *Update, speaker Speaker) {
+						UpdateHandler: UpdateHandlerFunc(func(hndlName string, update Update, speaker Speaker) {
 							log.Infof("UpdateHandler not configured.")
 						}),
 						Terminate: false,
@@ -90,9 +90,9 @@ func TestSpeaker_AddUpdateHandler(t *testing.T) {
 
 	f1 := fields{
 		UpdateHandlers: []UpdateHandlerConfig{
-			UpdateHandlerConfig{
+			{
 				Name: "UpdateHandlerConfig1",
-				UpdateHandler: UpdateHandlerFunc(func(msgChan chan *Update, speaker Speaker) {
+				UpdateHandler: UpdateHandlerFunc(func(hndlName string, update Update, speaker Speaker) {
 					log.Infof("UpdateHandler not configured.")
 				}),
 				Terminate: false,
@@ -102,16 +102,16 @@ func TestSpeaker_AddUpdateHandler(t *testing.T) {
 
 	f2 := fields{
 		UpdateHandlers: []UpdateHandlerConfig{
-			UpdateHandlerConfig{
+			{
 				Name: "UpdateHandlerConfig1",
-				UpdateHandler: UpdateHandlerFunc(func(msgChan chan *Update, speaker Speaker) {
+				UpdateHandler: UpdateHandlerFunc(func(hndlName string, update Update, speaker Speaker) {
 					log.Infof("UpdateHandler not configured.")
 				}),
 				Terminate: false,
 			},
-			UpdateHandlerConfig{
+			{
 				Name: "UpdateHandlerConfig2",
-				UpdateHandler: UpdateHandlerFunc(func(msgChan chan *Update, speaker Speaker) {
+				UpdateHandler: UpdateHandlerFunc(func(hndlName string, update Update, speaker Speaker) {
 					log.Infof("UpdateHandler not configured.")
 				}),
 				Terminate: false,
@@ -121,9 +121,9 @@ func TestSpeaker_AddUpdateHandler(t *testing.T) {
 
 	fDefault := fields{
 		UpdateHandlers: []UpdateHandlerConfig{
-			UpdateHandlerConfig{
+			{
 				Name: "NotConfigured",
-				UpdateHandler: UpdateHandlerFunc(func(msgChan chan *Update, speaker Speaker) {
+				UpdateHandler: UpdateHandlerFunc(func(hndlName string, update Update, speaker Speaker) {
 					log.Infof("UpdateHandler not configured.")
 				}),
 				Terminate: false,
@@ -132,7 +132,7 @@ func TestSpeaker_AddUpdateHandler(t *testing.T) {
 	}
 	uhc1 := UpdateHandlerConfig{
 		Name: "NewUpdateHandler",
-		UpdateHandler: UpdateHandlerFunc(func(msgChan chan *Update, speaker Speaker) {
+		UpdateHandler: UpdateHandlerFunc(func(hndlName string, update Update, speaker Speaker) {
 			log.Infof("UpdateHandler not configured.")
 		}),
 		Terminate: false,
