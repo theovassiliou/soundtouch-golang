@@ -1,6 +1,7 @@
 package soundtouch
 
 import (
+	"fmt"
 	"net"
 	"time"
 
@@ -45,7 +46,26 @@ func getDevices(conf NetworkConfig, closeChannel bool) (speakers chan *Speaker) 
 	iff, err := net.InterfaceByName(conf.InterfaceName)
 
 	if err != nil {
-		log.Fatalf("Error with interface. %s", err)
+		log.Printf("Error with interface. %s", err)
+		{
+			ifaces, err := net.Interfaces()
+			if err != nil {
+				log.Print(fmt.Errorf("localAddresses: %v\n", err.Error()))
+				return
+			}
+			log.Println("Available interfaces:")
+			for _, i := range ifaces {
+				addrs, err := i.Addrs()
+				if err != nil {
+					log.Print(fmt.Errorf("localAddresses: %v\n", err.Error()))
+					continue
+				}
+				for _, a := range addrs {
+					log.Printf("  %v %v\n", i.Name, a)
+				}
+			}
+			log.Fatalln("Aborting.")
+		}
 	}
 
 	for _, value := range conf.SpeakerToListenFor {
