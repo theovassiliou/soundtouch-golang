@@ -12,7 +12,9 @@ import (
 var name = "EpisodeCollector"
 
 const sampleConfig = `
+  ## Enabling the episodeCollector plugin
   # [episodeCollector]
+  
   ## speakers for which episodes should be stores. If empty, all 
   # speakers = ["Office", "Kitchen"]
 

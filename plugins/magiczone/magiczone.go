@@ -10,7 +10,9 @@ import (
 var name = "MagicZone"
 
 const sampleConfig = `
+  ## Enabling the magicZone plugin
   # [magicZone]
+
   ## ordered list of speakers that should be grouped in zones. All if empty.
   # speakers = ["Office", "Kitchen"]
 

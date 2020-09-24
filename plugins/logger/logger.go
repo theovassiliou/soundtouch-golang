@@ -10,6 +10,9 @@ import (
 var name = "Logger"
 
 const sampleConfig = `
+  ## Enabling logger plugin
+  # [logger]
+
   ## speakers for which messages should be logged. If empty, all 
   # speakers = ["Office", "Kitchen"]
 
