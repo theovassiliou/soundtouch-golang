@@ -46,7 +46,7 @@ func NewLogger(config Config) (d *Logger) {
 // Terminate indicates whether this is the last handler to be called
 // IgnoreMessages a list of message types to be ignored
 type Config struct {
-	Speakers       []string `toml:"-"`
+	Speakers       []string `toml:"speakers"`
 	Terminate      bool     `toml:"terminate"`
 	IgnoreMessages []string `toml:"ignore_messages"`
 }
@@ -71,6 +71,7 @@ func (d *Logger) Disable() { d.suspended = true }
 // Enable temporarely the execution of the plugin
 func (d *Logger) Enable() { d.suspended = false }
 
+// Execute runs the plugin with the given parameter
 func (d *Logger) Execute(pluginName string, update soundtouch.Update, speaker soundtouch.Speaker) {
 	if len(d.IgnoreMessages) > 0 && isIn(reflect.TypeOf(update.Value).Name(), d.IgnoreMessages) {
 		return
@@ -85,7 +86,6 @@ func (d *Logger) Execute(pluginName string, update soundtouch.Update, speaker so
 		"UpdateMsgType": reflect.TypeOf(update.Value).Name(),
 	})
 	mLogger.Infof("%v\n", update)
-	mLogger.Debugf("The config is %v\n", d.Config)
 }
 
 func isIn(name string, selected []string) bool {

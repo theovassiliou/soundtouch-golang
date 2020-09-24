@@ -8,10 +8,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type speakers map[string]*Speaker
+type Speakers map[string]*Speaker
 type speakerMap map[string]bool
 
-var visibleSpeakers = make(speakers)
+var visibleSpeakers = make(Speakers)
 var filteredSpeakers speakerMap
 
 // NetworkConfig describes the soundtouch network
@@ -24,6 +24,11 @@ type NetworkConfig struct {
 	NoOfSystems        int
 	SpeakerToListenFor []string
 	Plugins            []Plugin
+}
+
+// GetKnownDevices returns a map of the already seen speakers
+func GetKnownDevices() Speakers {
+	return visibleSpeakers
 }
 
 // GetDevices starts listening on the indicated interface for the speakers to listen for.
@@ -142,7 +147,7 @@ func isIn(list []string, deviceID string) bool {
 	return false
 }
 
-func contains(list speakers, deviceID string) bool {
+func contains(list Speakers, deviceID string) bool {
 	for _, ms := range list {
 		if ms.DeviceInfo.DeviceID == deviceID {
 			return true

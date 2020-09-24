@@ -15,3 +15,4 @@ terminate  = false
 speakers = ["Office"]
 artists = ["Drei Fragezeichen", "Umberto Eco"]
 terminate  = false
+database = "episodes.db"

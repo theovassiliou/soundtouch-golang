@@ -9,7 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/theovassiliou/soundtouch-golang"
-	"github.com/theovassiliou/soundtouch-golang/plugins/episodeCollector"
+	"github.com/theovassiliou/soundtouch-golang/plugins/episodecollector"
 	"github.com/theovassiliou/soundtouch-golang/plugins/logger"
 )
 
@@ -19,8 +19,8 @@ type config struct {
 	Global
 
 	LogLevel     log.Level `help:"Log level, one of panic, fatal, error, warn or warning, info, debug, trace"`
-	SampleConfig bool      `opts:"group=Configuration" help:"If set creates a sampe config file that can be used later"`
-	Config       string    `opts:"group=Soundtouch" help:"a configuration file"`
+	SampleConfig bool      `opts:"group=Configuration" help:"If set creates a sample config file that can be used later"`
+	Config       string    `opts:"group=Soundtouch" help:"configuration file to load"`
 }
 type Global struct {
 	Interface             string `opts:"group=Soundtouch" help:"network interface to listen"`
@@ -29,28 +29,19 @@ type Global struct {
 type tomlConfig struct {
 	Title            string
 	Global           Global
-	Logger           logger.Config           `toml:"logger"`
-	EpisodeCollector episodeCollector.Config `toml:"episodeCollector"`
+	Logger           *logger.Config           `toml:"logger"`
+	EpisodeCollector *episodecollector.Config `toml:"episodeCollector"`
 }
 
 func main() {
 	conf = config{
 		Global: Global{
-			Interface:             "",
-			NoOfSoundtouchSystems: 0,
-		},
-		LogLevel:     0,
-		SampleConfig: false,
-		Config:       "",
-	}
-
-	conf = config{
-		Global: Global{
 			Interface:             "en0",
 			NoOfSoundtouchSystems: -1,
 		},
-		Config:   "config.toml",
-		LogLevel: log.DebugLevel,
+		SampleConfig: false,
+		LogLevel:     log.DebugLevel,
+		Config:       "config.toml",
 	}
 
 	//parse config
@@ -74,12 +65,20 @@ func main() {
 		panic(err)
 	}
 
+	pl := []soundtouch.Plugin{}
+
+	if config.Logger != nil {
+		pl = append(pl, logger.NewLogger(*config.Logger))
+	}
+
+	if config.EpisodeCollector != nil {
+		pl = append(pl, episodecollector.NewCollector(*config.EpisodeCollector))
+	}
+
 	nConf := soundtouch.NetworkConfig{
 		InterfaceName: config.Global.Interface,
 		NoOfSystems:   config.Global.NoOfSoundtouchSystems,
-		Plugins: []soundtouch.Plugin{
-			// logger.NewLogger(config.Logger),
-			episodeCollector.NewCollector(config.EpisodeCollector)},
+		Plugins:       pl,
 	}
 
 	// SearchDevices does not closes the channel
