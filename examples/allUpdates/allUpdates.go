@@ -11,6 +11,7 @@ import (
 	"github.com/theovassiliou/soundtouch-golang"
 	"github.com/theovassiliou/soundtouch-golang/plugins/episodecollector"
 	"github.com/theovassiliou/soundtouch-golang/plugins/logger"
+	"github.com/theovassiliou/soundtouch-golang/plugins/magiczone"
 )
 
 var conf = config{}
@@ -31,6 +32,7 @@ type tomlConfig struct {
 	Global           Global
 	Logger           *logger.Config           `toml:"logger"`
 	EpisodeCollector *episodecollector.Config `toml:"episodeCollector"`
+	MagicZone        *magiczone.Config        `toml:"magicZone"`
 }
 
 func main() {
@@ -73,6 +75,10 @@ func main() {
 
 	if config.EpisodeCollector != nil {
 		pl = append(pl, episodecollector.NewCollector(*config.EpisodeCollector))
+	}
+
+	if config.MagicZone != nil {
+		pl = append(pl, magiczone.NewCollector(*config.MagicZone))
 	}
 
 	nConf := soundtouch.NetworkConfig{

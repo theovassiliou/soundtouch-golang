@@ -16,3 +16,10 @@ speakers = ["Office"]
 artists = ["Drei Fragezeichen", "Umberto Eco"]
 terminate  = false
 database = "episodes.db"
+
+[magicZone]
+## ordered list of speakers that should be grouped in zones. All if empty.
+# speakers = ["Office", "Kitchen"]
+
+## terminate indic ates whether no further plugin will be called after this plugin has been executed
+# terminate = false
