@@ -10,6 +10,7 @@ import (
 
 	"github.com/theovassiliou/soundtouch-golang"
 	"github.com/theovassiliou/soundtouch-golang/plugins/episodecollector"
+	"github.com/theovassiliou/soundtouch-golang/plugins/influxconnector"
 	"github.com/theovassiliou/soundtouch-golang/plugins/logger"
 	"github.com/theovassiliou/soundtouch-golang/plugins/magiczone"
 )
@@ -33,6 +34,7 @@ type tomlConfig struct {
 	Logger           *logger.Config           `toml:"logger"`
 	EpisodeCollector *episodecollector.Config `toml:"episodeCollector"`
 	MagicZone        *magiczone.Config        `toml:"magicZone"`
+	InfluxDB         *influxconnector.Config
 }
 
 func main() {
@@ -81,9 +83,13 @@ func main() {
 		pl = append(pl, magiczone.NewCollector(*config.MagicZone))
 	}
 
+	if config.InfluxDB != nil {
+		pl = append(pl, influxconnector.NewLogger(*config.InfluxDB))
+	}
+
 	nConf := soundtouch.NetworkConfig{
-		InterfaceName: config.Global.Interface,
-		NoOfSystems:   config.Global.NoOfSoundtouchSystems,
+		InterfaceName: conf.Global.Interface,
+		NoOfSystems:   conf.Global.NoOfSoundtouchSystems,
 		Plugins:       pl,
 	}
 

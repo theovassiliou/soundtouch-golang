@@ -48,6 +48,7 @@ func SearchDevices(conf NetworkConfig) (speakers chan *Speaker) {
 // getDevices starts listening on the indicated interface for the speakers to listen for.
 // passes to speakers the series of speakers that are handled for further processing
 func getDevices(conf NetworkConfig, closeChannel bool) (speakers chan *Speaker) {
+	log.Tracef("Opening interface %v", conf.InterfaceName)
 	iff, err := net.InterfaceByName(conf.InterfaceName)
 
 	if err != nil {
