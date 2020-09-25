@@ -41,6 +41,13 @@ type Logger struct {
 func NewLogger(config Config) (d *Logger) {
 	d = &Logger{}
 	d.Config = config
+
+	mLogger := log.WithFields(log.Fields{
+		"Plugin": name,
+	})
+
+	mLogger.Infof("Initialised\n")
+
 	return d
 }
 
