@@ -55,6 +55,24 @@ func LookupSpeakers(iface *net.Interface) <-chan *Speaker {
 	return speakerCh
 }
 
+// LookupSpeakers listens via mdns for soundtouch speakers and returns Speaker channel
+func LookupStaticSpeakers(speakerIPs []string) <-chan *Speaker {
+	speakerCh := make(chan *Speaker)
+	go func() {
+		defer close(speakerCh)
+		for _, ip := range speakerIPs {
+			fSpeaker := NewIPSpeaker(ip)
+
+			// filter non-soundtouch speakers
+			if fSpeaker.DeviceInfo.String() != "" {
+				speakerCh <- fSpeaker
+			}
+		}
+	}()
+
+	return speakerCh
+}
+
 // NewMdnsSpeaker returns a new Speaker entity based on a mdns service entry
 func NewMdnsSpeaker(entry *mdns.ServiceEntry) *Speaker {
 	if entry == nil {

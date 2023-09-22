@@ -23,6 +23,7 @@ type NetworkConfig struct {
 	InterfaceName      string
 	NoOfSystems        int
 	SpeakerToListenFor []string
+	StaticIPAddresses  []string
 	Plugins            []Plugin
 }
 
@@ -112,7 +113,13 @@ func getDevices(conf NetworkConfig, closeChannel bool) (speakers chan *Speaker) 
 	log.Debugf("Scanning for Soundtouch systems.")
 	go func() {
 		for ok := true; ok; ok = (len(visibleSpeakers) < conf.NoOfSystems) {
-			speakerCh := LookupSpeakers(iff)
+			var speakerCh <-chan *Speaker
+			if len(conf.StaticIPAddresses) > 0 {
+				speakerCh = LookupStaticSpeakers(conf.StaticIPAddresses)
+			} else {
+				speakerCh = LookupSpeakers(iff)
+			}
+
 			messageCh := make(chan *Update)
 
 			for speaker := range speakerCh {
