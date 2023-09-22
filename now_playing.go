@@ -47,6 +47,7 @@ const (
 	UPDATE             = "UPDATE"
 	Deezer             = "DEEZER"
 	Spotify            = "SPOTIFY"
+	Alexa              = "ALEXA"
 	IHeart             = "IHEART"
 )
 
