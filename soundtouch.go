@@ -139,7 +139,21 @@ func (s *Speaker) Listen() (chan *Update, error) {
 			})
 			_, body, err := conn.ReadMessage()
 			if err != nil {
-				log.Fatal(err)
+				spkLogger.Warn(err)
+				spkLogger.Warn("Trying to reconnect")
+				spkLogger.Tracef("Re-Dialing %v", s.WebSocketURL.String())
+				conn, _, err = websocket.DefaultDialer.Dial(
+					s.WebSocketURL.String(),
+					http.Header{
+						"Sec-WebSocket-Protocol": []string{"gabbo"},
+					})
+
+				if err != nil {
+					spkLogger.Warn("Re-Dialing failed")
+					spkLogger.Fatal(err)
+				}
+
+				s.conn = conn
 			}
 			mLogger.Tracef("Raw Message: %v", string(body))
 
