@@ -113,7 +113,7 @@ func (s *Speaker) IsSpeakerMember(members []Member) bool {
 	return false
 }
 
-//AddSlave adds a speaker to an existing zone
+// AddSlave adds a speaker to an existing zone
 func (z *Zone) AddSlave(s Speaker) {
 	z.Members = append(z.Members, Member{
 		s.IP.String(), s.DeviceInfo.DeviceID,
@@ -145,6 +145,9 @@ func DumpZones(log *log.Entry, s Speaker) {
 		return
 	}
 	zone, _ := s.GetZone()
+	if log == nil {
+		return
+	}
 	log.Infoln("  zone.Master", zone.Master)
 	log.Infoln("  zone.SenderIPAddress", zone.SenderIPAddress)
 	log.Infoln("  zone.SenderIsMaster", zone.SenderIsMaster)
