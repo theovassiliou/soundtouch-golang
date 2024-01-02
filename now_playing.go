@@ -85,17 +85,17 @@ var ALLSTREAMS = []string{
 
 // NowPlaying defines the now_playing message to/from soundtouch system
 type NowPlaying struct {
-	PlayStatus    PlayStatus  `xml:"playStatus"`
-	Source        string      `xml:"source,attr"`
-	SourceAccount string      `xml:"sourceAccount,attr"`
-	DeviceID      string      `xml:"deviceID,attr"`
-	Content       ContentItem `xml:"ContentItem"`
-	Track         string      `xml:"track"`
-	Artist        string      `xml:"artist"`
-	Album         string      `xml:"album"`
-	TrackID       string      `xml:"trackID"`
-	Art           string      `xml:"art"`
-	StreamType    string      `xml:"streamType"`
+	PlayStatus    PlayStatus  `xml:"playStatus" json:",omitempty"`
+	Source        string      `xml:"source,attr" json:",omitempty"`
+	SourceAccount string      `xml:"sourceAccount,attr" json:",omitempty"`
+	DeviceID      string      `xml:"deviceID,attr" json:",omitempty"`
+	Content       ContentItem `xml:"ContentItem" json:",omitempty"`
+	Track         string      `xml:"track" json:",omitempty"`
+	Artist        string      `xml:"artist" json:",omitempty"`
+	Album         string      `xml:"album" json:",omitempty"`
+	TrackID       string      `xml:"trackID" json:",omitempty"`
+	Art           string      `xml:"art" json:",omitempty"`
+	StreamType    string      `xml:"streamType" json:",omitempty"`
 	Raw           []byte      `json:"-"`
 }
 

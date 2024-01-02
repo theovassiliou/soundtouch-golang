@@ -6,18 +6,18 @@ import (
 
 // SourceItem defines a source within a soundtouch system
 type SourceItem struct {
-	Source        Source `xml:"source,attr"`
-	SourceAccount string `xml:"sourceAccount,attr"`
-	Status        string `xml:"status,attr"`
-	Local         bool   `xml:"isLocal,attr"`
-	Value         string `xml:",innerxml"`
+	Source        Source `xml:"source,attr" json:",omitempty"`
+	SourceAccount string `xml:"sourceAccount,attr" json:",omitempty"`
+	Status        string `xml:"status,attr" json:",omitempty"`
+	Local         bool   `xml:"isLocal,attr" json:",omitempty"`
+	Value         string `xml:",innerxml" json:",omitempty"`
 }
 
 // Sources defines the soundtouch sources command
 type Sources struct {
-	DeviceID    string       `xml:"deviceID,attr"`
+	DeviceID    string       `xml:"deviceID,attr" json:",omitempty"`
 	SourceItems []SourceItem `xml:"sourceItem"`
-	Raw         []byte
+	Raw         []byte       `json:"-"`
 }
 
 // Sources sends the sources command to the soundtouch system

@@ -7,21 +7,27 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//Info defines the Info command for the soundtouch system
+// Info defines the Info command for the soundtouch system
 type Info struct {
-	DeviceID  string      `xml:"deviceID,attr"`
-	Name      string      `xml:"name"`
-	Type      string      `xml:"type"`
-	IPAddress []string    `xml:"networkInfo>ipAddress"`
-	Component []Component `xml:"components>component"`
-	Raw       []byte
+	DeviceID    string      `xml:"deviceID,attr" json:",omitempty"`
+	Name        string      `xml:"name" json:",omitempty"`
+	Type        string      `xml:"type" json:",omitempty"`
+	IPAddress   []string    `xml:"networkInfo>ipAddress"`
+	Component   []Component `xml:"components>component" json:",omitempty"`
+	MargeUrl    string      `xml:"margeURL" json:",omitempty"`
+	ModuleType  string      `xml:"moduleType" json:",omitempty"`
+	Variant     string      `xml:"variant" json:",omitempty"`
+	VariantMode string      `xml:"variantMode" json:",omitempty"`
+	CountryCode string      `xml:"countryCode" json:",omitempty"`
+	RegionCode  string      `xml:"regionCode" json:",omitempty"`
+	Raw         []byte      `json:"-"`
 }
 
 // Component contains some component information
 type Component struct {
-	ComponentCategory string `xml:"componentCategory"`
-	SoftwareVersion   string `xml:"softwareVersion"`
-	SerialNumber      string `xml:"serialNumber"`
+	ComponentCategory string `xml:"componentCategory" json:",omitempty"`
+	SoftwareVersion   string `xml:"softwareVersion" json:",omitempty"`
+	SerialNumber      string `xml:"serialNumber" json:",omitempty"`
 }
 
 // Info retrieves speaker information and updates the speakers info field

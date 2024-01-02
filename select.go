@@ -6,10 +6,10 @@ import (
 
 // ContentItem describe a playable item
 type ContentItem struct {
-	Type         string `xml:"type,attr"`
-	Source       Source `xml:"source,attr"`
-	Location     string `xml:"location,attr"`
-	Name         string `xml:"itemName"`
+	Type         string `xml:"type,attr" json:",omitempty"`
+	Source       Source `xml:"source,attr" json:",omitempty"`
+	Location     string `xml:"location,attr" json:",omitempty"`
+	Name         string `xml:"itemName" json:",omitempty"`
 	IsPresetable bool   `xml:"isPresetable,attr"`
 }
 

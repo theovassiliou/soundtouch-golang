@@ -11,7 +11,7 @@ type Volume struct {
 	TargetVolume int    `xml:"targetvolume"`
 	ActualVolume int    `xml:"actualvolume"`
 	Muted        bool   `xml:"mutedenabled"`
-	Raw          []byte
+	Raw          []byte `json:"-"`
 }
 
 // Volume sends the volume command to the soundtouch system to retrieve the volume

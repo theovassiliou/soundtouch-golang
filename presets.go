@@ -12,7 +12,7 @@ type Preset struct {
 
 // Presets specifies the Presets Update message
 type Presets struct {
-	DeviceID string   `xml:"deviceID,attr"`
+	DeviceID string   `xml:"deviceID,attr" json:",omitempty"`
 	Presets  []Preset `xml:"preset"`
 	Raw      []byte   `json:"-"`
 }
