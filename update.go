@@ -14,25 +14,36 @@ type Update struct {
 	Value    interface{}
 }
 
-// NewUpdate returns an Update decoded from a received message
+// NewUpdate creates a new Update object based on the provided XML body.
+// It parses the XML and extracts the necessary information to create the Update object.
+// The XML body should be in the following format:
+// <updates deviceID="deviceID">
+//
+//	<updateType>
+//	    <value>...</value>
+//	</updateType>
+//
+// </updates>
+// The function returns the created Update object and an error if any occurred during parsing.
 func NewUpdate(body []byte) (*Update, error) {
+	// Create a new XML decoder to parse the XML body
 	decoder := xml.NewDecoder(bytes.NewBuffer(body))
-	root, err := decoder.Token()
+	root, err := decoder.Token() // Get the root element
 	if err != nil {
 		return nil, err
 	}
 
 	if root == nil {
-		return nil, errors.New("Invalid XML format")
+		return nil, errors.New("invalid XML format")
 	}
 
 	rootElement, ok := root.(xml.StartElement)
 	if !ok {
-		return nil, errors.New("Invalid XML format")
+		return nil, errors.New("invalid XML format")
 	}
 
 	if rootElement.Name.Local != "updates" {
-		return nil, errors.New("Unsupported event")
+		return nil, errors.New("unsupported event")
 	}
 	var deviceID string
 	for i := 0; i < len(rootElement.Attr); i++ {
@@ -41,6 +52,7 @@ func NewUpdate(body []byte) (*Update, error) {
 		}
 	}
 
+	// Get the update type
 	updateType, err := decoder.Token()
 	if err != nil {
 		return nil, err
@@ -93,7 +105,7 @@ func NewUpdate(body []byte) (*Update, error) {
 		}
 		return &Update{deviceID, preset}, nil
 	default:
-		return nil, fmt.Errorf("Unhandeld Update Message. %v", string(body))
+		return nil, fmt.Errorf("unhandeld Update Message. %v", string(body))
 	}
 }
 
@@ -114,6 +126,7 @@ func (u Update) Is(msgTypeName string) bool {
 
 // Artist returns the artist if present, empty else
 func (u Update) Artist() string {
+
 	switch reflect.TypeOf(u.Value).Name() {
 	case "NowPlaying":
 		return u.Value.(NowPlaying).Artist
